@@ -2,9 +2,17 @@ cmake_minimum_required(VERSION 2.8)
 
 project(craft)
 
+set(VULKANIZE 1)
+
 FILE(GLOB SOURCE_FILES src/*.c)
 FILE(GLOB VERTEX_SHADERS shaders/*_vertex.glsl)
 FILE(GLOB FRAGMENT_SHADERS shaders/*_fragment.glsl)
+
+if(VULKANIZE)
+    LIST(REMOVE_ITEM SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/glrenderer.c)
+else(VULKANIZE)
+    LIST(REMOVE_ITEM SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/vkrenderer.c)
+endif(VULKANIZE)
 
 foreach(VERT ${VERTEX_SHADERS})
   get_filename_component(BASE_NAME ${VERT} NAME_WLE)
@@ -45,7 +53,12 @@ add_library(world SHARED
     src/world.c
     deps/noise/noise.c)
 
-add_definitions(-std=c99 -O3 -Wall)
+if(VULKANIZE)
+add_definitions(-std=c99 -O3 -Wall -DVULKANIZE=1 -DGLFW_INCLUDE_VULKAN)
+else(VULKANIZE)
+add_definitions(-std=c99 -O3 -Wall -DVULKANIZE=0)
+endif(VULKANIZE)
+
 add_dependencies(craft
      Shaders
 )
@@ -65,17 +78,23 @@ endif()
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
+if(VULKANIZE)
+    set(GRAPHICS_LIB vulkan)
+else(VULKANIZE)
+    set(GRAPHICS_LIB GLEW)
+endif(VULKANIZE)
+
 if(APPLE)
     target_link_libraries(craft glfw GLEW m GL
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()
 
 if(UNIX)
-    target_link_libraries(craft dl glfw GLEW m GL
+    target_link_libraries(craft dl glfw m GL ${GRAPHICS_LIB}
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()
 
 if(MINGW)
-    target_link_libraries(craft ws2_32.lib glfw GLEW m GL
+    target_link_libraries(craft ws2_32.lib glfw m GL ${GRAPHICS_LIB}
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()

@@ -204,6 +204,9 @@ class Model(object):
             (re.compile(r'^/pq\s+(-?[0-9]+)\s*,?\s*(-?[0-9]+)$'), self.on_pq),
             (re.compile(r'^/help(?:\s+(\S+))?$'), self.on_help),
             (re.compile(r'^/list$'), self.on_list),
+            (re.compile(r'^/savepos\s+([a-zA-Z0-9_]+)$'), self.on_savepos),
+            (re.compile(r'^/loadpos\s+([a-zA-Z0-9_]+)$'), self.on_loadpos),
+            (re.compile(r'^/listpos$'), self.on_listpos),
         ]
 
     def start(self):
@@ -281,6 +284,14 @@ class Model(object):
             '   y int not null,'
             '   z int not null,'
             '   w int not null'
+            ');',
+            'create table if not exists saved_position('
+            '    name text primary key,'
+            '    p int not null,'
+            '    q int not null,'
+            '    x int not null,'
+            '    y int not null,'
+            '    z int not null'
             ');',
         ]
         for query in queries:
@@ -587,6 +598,8 @@ class Model(object):
                 TALK, '/goto [NAME], /help [TOPIC], /list, /login NAME, /logout, /nick')
             client.send(
                 TALK, '/offline [FILE], /online HOST [PORT], /pq P Q, /spawn, /view N')
+            client.send(
+                TALK, '/savepos NAME, /loadpos NAME')
             return
         topic = topic.lower().strip()
         if topic == 'goto':
@@ -597,6 +610,12 @@ class Model(object):
         elif topic == 'list':
             client.send(TALK, 'Help: /list')
             client.send(TALK, 'Display a list of connected users.')
+        elif topic == 'listpos':
+            client.send(TALK, 'Help: /listpos')
+            client.send(TALK, 'List all previously saved position names')
+        elif topic == 'loadpos':
+            client.send(TALK, 'Help: /loadpos NAME')
+            client.send(TALK, 'Load previously saved position named "NAME", see /savepos.')
         elif topic == 'login':
             client.send(TALK, 'Help: /login NAME')
             client.send(TALK, 'Switch to another registered username.')
@@ -621,6 +640,9 @@ class Model(object):
         elif topic == 'pq':
             client.send(TALK, 'Help: /pq P Q')
             client.send(TALK, 'Teleport to the specified chunk.')
+        elif topic == 'savepos':
+            client.send(TALK, 'Help: /savepos NAME')
+            client.send(TALK, 'Save current position under "NAME" for later restoring using /loadpos')
         elif topic == 'spawn':
             client.send(TALK, 'Help: /spawn')
             client.send(TALK, 'Teleport back to the spawn point.')
@@ -631,6 +653,53 @@ class Model(object):
     def on_list(self, client):
         client.send(TALK,
                     'Players: %s' % ', '.join(x.nick for x in self.clients))
+
+    def on_savepos(self, client, pos_name=None):
+        if pos_name is None:
+            client.send(TALK, 'Usage: "/savepos NAME" saves current position as short cut of name NAME')
+            return
+        pos_name = pos_name.lower().strip()
+        query = (
+            'insert or replace into saved_position (name, p, q, x, y, z) '
+            'values (:name, :p, :q, :x, :y, :z);'
+        )
+        pos = client.position
+        self.execute(query,
+                     dict(name=pos_name, p=pos[3], q=pos[4], x=pos[0], y=pos[1], z=pos[2]))
+        client.send(TALK, 'Position saved')
+
+    def on_loadpos(self, client, pos_name=None):
+        query = (
+            'select p, q, x, y, z from saved_position where '
+            'name = :name;'
+        )
+        rows = self.execute(query, dict(name=pos_name))
+
+        row_count = 0
+        pos = SPAWN_POINT
+        for p, q, x, y, z in rows:
+            if row_count > 0:
+                client.send(TALK, 'Position name encountered multiple times - this should not happen.')
+                return
+            pos = (x, y, z, p, q)
+            row_count = row_count + 1
+        if row_count == 0:
+            client.send(TALK, 'Position not found.')
+            return
+        client.position = pos
+        client.send(YOU, client.client_id, *client.position)
+        self.send_position(client)
+        client.send(TALK, 'Position restored')
+
+    def on_listpos(self, client):
+        query = (
+            'select name from saved_position order by name asc'
+        )
+        rows = self.execute(query, dict())
+
+        client.send(TALK, 'Saved positions:')
+        for name in rows:
+            client.send(TALK, '- ' + name[0])
 
     def send_positions(self, client):
         for other in self.clients:

@@ -195,7 +195,7 @@ int get_scale_factor() {
 }
 
 void get_sight_vector(float rx, float ry, float *vx, float *vy, float *vz) {
-    float m = cosf(ry);
+    const float m = cosf(ry);
     *vx = cosf(rx - RADIANS(90)) * m;
     *vy = sinf(ry);
     *vz = sinf(rx - RADIANS(90)) * m;
@@ -207,7 +207,7 @@ void get_motion_vector(int flying, int sz, int sx, float rx, float ry,
     if (!sz && !sx) {
         return;
     }
-    float strafe = atan2f(sz, sx);
+    const float strafe = atan2f(sz, sx);
     if (flying) {
         float m = cosf(ry);
         float y = sinf(ry);
@@ -232,9 +232,9 @@ void get_motion_vector(int flying, int sz, int sx, float rx, float ry,
 }
 
 GLuint gen_crosshair_buffer() {
-    int x = g->width / 2;
-    int y = g->height / 2;
-    int p = 10 * g->scale;
+    const int x = g->width / 2;
+    const int y = g->height / 2;
+    const int p = 10 * g->scale;
     float data[] = {
         x, y - p, x, y + p,
         x - p, y, x + p, y
@@ -271,8 +271,8 @@ GLuint gen_cube_buffer(float x, float y, float z, float n, int w) {
 
 GLuint gen_plant_buffer(float x, float y, float z, float n, int w) {
     GLfloat *data = malloc_faces(10, 4);
-    float ao = 0;
-    float light = 1;
+    const float ao = 0;
+    const float light = 1;
     make_plant(data, ao, light, x, y, z, n, w, 45);
     return gen_faces(10, 4, data);
 }
@@ -284,7 +284,7 @@ GLuint gen_player_buffer(float x, float y, float z, float rx, float ry) {
 }
 
 GLuint gen_text_buffer(float x, float y, float n, char *text) {
-    int length = strlen(text);
+    const size_t length = strlen(text);
     GLfloat *data = malloc_faces(4, length);
     for (int i = 0; i < length; i++) {
         make_character(data + i * 24, x, y, n / 2, n, text[i]);
@@ -419,7 +419,8 @@ Player *find_player(int id) {
 }
 
 void update_player(Player *player,
-    float x, float y, float z, float rx, float ry, int interpolate)
+    const float x, const float y, const float z,
+    const float rx, const float ry, const int interpolate)
 {
     if (interpolate) {
         State *s1 = &player->state1;
@@ -483,30 +484,30 @@ void delete_all_players() {
 float player_player_distance(Player *p1, Player *p2) {
     State *s1 = &p1->state;
     State *s2 = &p2->state;
-    float x = s2->x - s1->x;
-    float y = s2->y - s1->y;
-    float z = s2->z - s1->z;
+    const float x = s2->x - s1->x;
+    const float y = s2->y - s1->y;
+    const float z = s2->z - s1->z;
     return sqrtf(x * x + y * y + z * z);
 }
 
 float player_crosshair_distance(Player *p1, Player *p2) {
     State *s1 = &p1->state;
     State *s2 = &p2->state;
-    float d = player_player_distance(p1, p2);
+    const float d = player_player_distance(p1, p2);
     float vx, vy, vz;
     get_sight_vector(s1->rx, s1->ry, &vx, &vy, &vz);
     vx *= d; vy *= d; vz *= d;
     float px, py, pz;
     px = s1->x + vx; py = s1->y + vy; pz = s1->z + vz;
-    float x = s2->x - px;
-    float y = s2->y - py;
-    float z = s2->z - pz;
+    const float x = s2->x - px;
+    const float y = s2->y - py;
+    const float z = s2->z - pz;
     return sqrtf(x * x + y * y + z * z);
 }
 
 Player *player_crosshair(Player *player) {
     Player *result = 0;
-    float threshold = RADIANS(5);
+    const float threshold = RADIANS(5);
     float best = 0;
     for (int i = 0; i < g->player_count; i++) {
         Player *other = g->players + i;
@@ -536,16 +537,16 @@ Chunk *find_chunk(int p, int q) {
 }
 
 int chunk_distance(Chunk *chunk, int p, int q) {
-    int dp = ABS(chunk->p - p);
-    int dq = ABS(chunk->q - q);
+    const int dp = ABS(chunk->p - p);
+    const int dq = ABS(chunk->q - q);
     return MAX(dp, dq);
 }
 
 int chunk_visible(float planes[6][4], int p, int q, int miny, int maxy) {
-    int x = p * CHUNK_SIZE - 1;
-    int z = q * CHUNK_SIZE - 1;
-    int d = CHUNK_SIZE + 1;
-    float points[8][3] = {
+    const int x = p * CHUNK_SIZE - 1;
+    const int z = q * CHUNK_SIZE - 1;
+    const int d = CHUNK_SIZE + 1;
+    const float points[8][3] = {
         {x + 0, miny, z + 0},
         {x + d, miny, z + 0},
         {x + 0, miny, z + d},
@@ -560,12 +561,12 @@ int chunk_visible(float planes[6][4], int p, int q, int miny, int maxy) {
         int in = 0;
         int out = 0;
         for (int j = 0; j < 8; j++) {
-            float d =
+            const float di =
                 planes[i][0] * points[j][0] +
                 planes[i][1] * points[j][1] +
                 planes[i][2] * points[j][2] +
                 planes[i][3];
-            if (d < 0) {
+            if (di < 0) {
                 out++;
             }
             else {
@@ -582,12 +583,12 @@ int chunk_visible(float planes[6][4], int p, int q, int miny, int maxy) {
     return 1;
 }
 
-int highest_block(float x, float z) {
+int highest_block(const float x, const float z) {
     int result = -1;
-    int nx = roundf(x);
-    int nz = roundf(z);
-    int p = chunked(x);
-    int q = chunked(z);
+    const int nx = roundf(x);
+    const int nz = roundf(z);
+    const int p = chunked(x);
+    const int q = chunked(z);
     Chunk *chunk = find_chunk(p, q);
     if (chunk) {
         Map *map = &chunk->map;
@@ -606,14 +607,14 @@ int _hit_test(
     float vx, float vy, float vz,
     int *hx, int *hy, int *hz)
 {
-    int m = 32;
+    const int m = 32;
     int px = 0;
     int py = 0;
     int pz = 0;
     for (int i = 0; i < max_distance * m; i++) {
-        int nx = roundf(x);
-        int ny = roundf(y);
-        int nz = roundf(z);
+        const int nx = roundf(x);
+        const int ny = roundf(y);
+        const int nz = roundf(z);
         if (nx != px || ny != py || nz != pz) {
             int hw = map_get(map, nx, ny, nz);
             if (hw > 0) {
@@ -638,8 +639,8 @@ int hit_test(
 {
     int result = 0;
     float best = 0;
-    int p = chunked(x);
-    int q = chunked(z);
+    const int p = chunked(x);
+    const int q = chunked(z);
     float vx, vy, vz;
     get_sight_vector(rx, ry, &vx, &vy, &vz);
     for (int i = 0; i < g->chunk_count; i++) {
@@ -651,7 +652,7 @@ int hit_test(
         int hw = _hit_test(&chunk->map, 8, previous,
             x, y, z, vx, vy, vz, &hx, &hy, &hz);
         if (hw > 0) {
-            float d = sqrtf(
+            const float d = sqrtf(
                 powf(hx - x, 2) + powf(hy - y, 2) + powf(hz - z, 2));
             if (best == 0 || d < best) {
                 best = d;
@@ -665,13 +666,13 @@ int hit_test(
 
 int hit_test_face(Player *player, int *x, int *y, int *z, int *face) {
     State *s = &player->state;
-    int w = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, x, y, z);
+    const int w = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, x, y, z);
     if (is_obstacle(w)) {
         int hx, hy, hz;
         hit_test(1, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
-        int dx = hx - *x;
-        int dy = hy - *y;
-        int dz = hz - *z;
+        const int dx = hx - *x;
+        const int dy = hy - *y;
+        const int dz = hz - *z;
         if (dx == -1 && dy == 0 && dz == 0) {
             *face = 0; return 1;
         }
@@ -689,7 +690,7 @@ int hit_test_face(Player *player, int *x, int *y, int *z, int *face) {
             if (degrees < 0) {
                 degrees += 360;
             }
-            int top = ((degrees + 45) / 90) % 4;
+            const int top = ((degrees + 45) / 90) % 4;
             *face = 4 + top; return 1;
         }
     }
@@ -2440,13 +2441,13 @@ void handle_movement(double dt) {
             }
         }
     }
-    float speed = g->flying ? BASE_FLYING_SPEED : BASE_SPEED;
-    int estimate = roundf(sqrtf(
+    const float speed = g->flying ? BASE_FLYING_SPEED : BASE_SPEED;
+    const int estimate = roundf(sqrtf(
         powf(vx * speed, 2) +
         powf(vy * speed + ABS(dy) * 2, 2) +
         powf(vz * speed, 2)) * dt * 8);
-    int step = MAX(8, estimate);
-    float ut = dt / step;
+    const int step = MAX(8, estimate);
+    const float ut = dt / step;
     vx = vx * ut * speed;
     vy = vy * ut * speed;
     vz = vz * ut * speed;

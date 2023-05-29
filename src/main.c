@@ -2387,13 +2387,12 @@ void handle_mouse_input() {
     if (exclusive && (px || py)) {
         double mx, my;
         glfwGetCursorPos(g->window, &mx, &my);
-        float m = 0.0025;
-        s->rx += (mx - px) * m;
+        s->rx += (mx - px) * MOUSE_SENSITIVITY;
         if (INVERT_MOUSE) {
-            s->ry += (my - py) * m;
+            s->ry += (my - py) * MOUSE_SENSITIVITY;
         }
         else {
-            s->ry -= (my - py) * m;
+            s->ry -= (my - py) * MOUSE_SENSITIVITY;
         }
         if (s->rx < 0) {
             s->rx += RADIANS(360);

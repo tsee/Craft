@@ -187,11 +187,14 @@ float get_daylight() {
     }
 }
 
-int get_scale_factor() {
+int get_scale_factor(GLFWwindow *window) {
     int window_width, window_height;
     int buffer_width, buffer_height;
-    glfwGetWindowSize(g->window, &window_width, &window_height);
-    glfwGetFramebufferSize(g->window, &buffer_width, &buffer_height);
+    glfwGetWindowSize(window, &window_width, &window_height);
+    if (window_width <= 0 || window_height <= 0) {
+        return 0;
+    }
+    glfwGetFramebufferSize(window, &buffer_width, &buffer_height);
     int result = buffer_width / window_width;
     result = MAX(1, result);
     result = MIN(2, result);
@@ -2349,7 +2352,7 @@ void create_window() {
 
         g->window = glfwCreateWindow(
             window_width, window_height, "Craft", monitor, NULL);
-        g->scale = get_scale_factor();
+        g->scale = get_scale_factor(g->window);
         glfwDestroyWindow(g->window);
         if (g->scale != 1) {
             window_width /= g->scale;
@@ -2695,7 +2698,7 @@ int main(int argc, char **argv) {
         double last_commit = glfwGetTime();
         double last_update = glfwGetTime();
         glfwGetFramebufferSize(g->window, &g->width, &g->height);
-        g->scale = get_scale_factor();
+        g->scale = get_scale_factor(g->window);
         Buffer sky_buffer = gen_sky_buffer();
         Buffer crosshair_buffer = gen_crosshair_buffer();
         Buffer wireframe_buffer = gen_wireframe_buffer(0.53);
@@ -2728,7 +2731,7 @@ int main(int argc, char **argv) {
         double previous = glfwGetTime();
         while (1) {
             // WINDOW SIZE AND SCALE //
-            g->scale = get_scale_factor();
+            g->scale = get_scale_factor(g->window);
             glfwGetFramebufferSize(g->window, &g->width, &g->height);
 
             // FRAME RATE //

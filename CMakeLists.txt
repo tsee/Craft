@@ -34,16 +34,16 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 if(APPLE)
-    target_link_libraries(craft glfw GLEW
+    target_link_libraries(craft glfw GLEW m GL
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()
 
 if(UNIX)
-    target_link_libraries(craft dl glfw GLEW
+    target_link_libraries(craft dl glfw GLEW m GL
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()
 
 if(MINGW)
-    target_link_libraries(craft ws2_32.lib glfw GLEW
+    target_link_libraries(craft ws2_32.lib glfw GLEW m GL
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()

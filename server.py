@@ -15,15 +15,15 @@ import traceback
 DEFAULT_HOST = '0.0.0.0'
 DEFAULT_PORT = 4080
 
-DB_PATH = 'craft.db'
-LOG_PATH = 'log.txt'
+DB_PATH = 'craft_server.db'
+LOG_PATH = 'server_log.txt'
 
 CHUNK_SIZE = 32
 BUFFER_SIZE = 4096
 COMMIT_INTERVAL = 5
 
-AUTH_REQUIRED = True
-AUTH_URL = 'https://craft.michaelfogleman.com/api/1/access'
+AUTH_REQUIRED = False
+#AUTH_URL = 'https://craft.michaelfogleman.com/api/1/access'
 
 DAY_LENGTH = 600
 SPAWN_POINT = (0, 0, 0, 0, 0)

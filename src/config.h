@@ -54,6 +54,7 @@
 #define RENDER_SIGN_RADIUS 4
 #define DELETE_CHUNK_RADIUS 14
 #define CHUNK_SIZE 32
+// database commit interval in seconds
 #define COMMIT_INTERVAL 5
 
 #endif

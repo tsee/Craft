@@ -2053,13 +2053,17 @@ void parse_command(const char *buffer, int forward) {
         g->mode = MODE_ONLINE;
         strncpy(g->server_addr, server_addr, MAX_ADDR_LENGTH);
         g->server_port = server_port;
-        snprintf(g->db_path, MAX_PATH_LENGTH,
+        const int res = snprintf(g->db_path, MAX_PATH_LENGTH,
             "cache.%s.%d.db", g->server_addr, g->server_port);
+        if (res < 0)
+            printf("db_path was truncated\n");
     }
     else if (sscanf(buffer, "/offline %128s", filename) == 1) {
         g->mode_changed = 1;
         g->mode = MODE_OFFLINE;
-        snprintf(g->db_path, MAX_PATH_LENGTH, "%s.db", filename);
+        const int res = snprintf(g->db_path, MAX_PATH_LENGTH, "%s.db", filename);
+        if (res < 0)
+            printf("db_path was truncated\n");
     }
     else if (strcmp(buffer, "/offline") == 0) {
         g->mode_changed = 1;
@@ -2706,8 +2710,11 @@ int main(int argc, char **argv) {
         g->mode = MODE_ONLINE;
         strncpy(g->server_addr, argv[1], MAX_ADDR_LENGTH);
         g->server_port = argc == 3 ? atoi(argv[2]) : DEFAULT_PORT;
-        snprintf(g->db_path, MAX_PATH_LENGTH,
+        const int res = snprintf(
+            g->db_path, MAX_PATH_LENGTH,
             "cache.%s.%d.db", g->server_addr, g->server_port);
+        if (res < 0)
+            printf("db_path was truncated\n");
     }
     else {
         g->mode = MODE_OFFLINE;
@@ -2855,7 +2862,8 @@ int main(int argc, char **argv) {
             }
 
             // RENDER TEXT //
-            char text_buffer[1024];
+            const size_t text_buffer_size = MAX_TEXT_LENGTH * 4;
+            char text_buffer[text_buffer_size];
             float ts = 12 * g->scale;
             float tx = ts / 2;
             float ty = g->height - ts;
@@ -2865,7 +2873,7 @@ int main(int argc, char **argv) {
                 hour = hour % 12;
                 hour = hour ? hour : 12;
                 snprintf(
-                    text_buffer, 1024,
+                    text_buffer, text_buffer_size,
                     "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %d%cm %dfps",
                     chunked(s->x), chunked(s->z), s->x, s->y, s->z,
                     g->player_count, g->chunk_count,
@@ -2884,7 +2892,9 @@ int main(int argc, char **argv) {
                 }
             }
             if (g->typing) {
-                snprintf(text_buffer, 1024, "> %s", g->typing_buffer);
+                const int res = snprintf(text_buffer, text_buffer_size, "> %s", g->typing_buffer);
+                if (res < 0)
+                  printf("text_buffer was truncated\n");
                 render_text(&text_attrib, ALIGN_LEFT, tx, ty, ts, text_buffer);
                 ty -= ts * 2;
             }

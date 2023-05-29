@@ -86,8 +86,13 @@ but requires a compiled DLL so it can perform the terrain generation just like
 the client.
 
 ```bash
-gcc -std=c99 -O3 -fPIC -shared -o world -I src -I deps/noise deps/noise/noise.c src/world.c
 python server.py [HOST [PORT]]
+```
+
+This DLL should be compiled by default along with the client, but if that doesn't work, you can try compiling it manually:
+
+```bash
+gcc -std=c99 -O3 -fPIC -shared -o world -I src -I deps/noise deps/noise/noise.c src/world.c
 ```
 
 ### Controls
@@ -112,6 +117,10 @@ python server.py [HOST [PORT]]
 - Enter emulates mouse click.
 
 ### Chat Commands
+
+    /help
+
+List all available commands (more than documented in the README).
 
     /goto [NAME]
 

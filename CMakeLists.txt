@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(craft)
 
-set(VULKANIZE 1)
+set(VULKANIZE 0)
+set(DEBUG 0)
 
 FILE(GLOB SOURCE_FILES src/*.c)
 FILE(GLOB VERTEX_SHADERS shaders/*_vertex.glsl)
@@ -53,10 +54,16 @@ add_library(world SHARED
     src/world.c
     deps/noise/noise.c)
 
+if(DEBUG)
+add_definitions(-g -ggdb -O0)
+else(DEBUG)
+add_definitions(-O3)
+endif(DEBUG)
+
 if(VULKANIZE)
-add_definitions(-std=c99 -O3 -Wall -DVULKANIZE=1 -DGLFW_INCLUDE_VULKAN)
+add_definitions(-std=c99 -Wall -DVULKANIZE=1 -DGLFW_INCLUDE_VULKAN)
 else(VULKANIZE)
-add_definitions(-std=c99 -O3 -Wall -DVULKANIZE=0)
+add_definitions(-std=c99 -Wall -DVULKANIZE=0)
 endif(VULKANIZE)
 
 add_dependencies(craft

@@ -1,10 +1,17 @@
 # gcc -std=c99 -O3 -shared -o world \
 #   -I src -I deps/noise deps/noise/noise.c src/world.c
 
+import platform
 from ctypes import CDLL, CFUNCTYPE, c_float, c_int, c_void_p
 from collections import OrderedDict
 
-dll = CDLL('./world')
+# get the right filename - probably not the most portable in the world
+dllname = "./world.dylib" # osx by default
+if platform.uname()[0] == "Windows":
+    dllname = "world.dll"
+elif platform.uname()[0] == "Linux":
+    dllname = "./libworld.so"
+dll = CDLL(dllname)
 
 WORLD_FUNC = CFUNCTYPE(None, c_int, c_int, c_int, c_int, c_void_p)
 

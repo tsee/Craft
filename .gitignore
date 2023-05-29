@@ -15,6 +15,7 @@ log.txt
 *.pyc
 .*.swp
 .*.swo
+libworld.so
 deps/glfw/examples/particles
 deps/glfw/src/glfw3Config.cmake
 deps/glfw/src/glfw3ConfigVersion.cmake

@@ -12,8 +12,12 @@
 #define DB_PATH "craft.db"
 #define USE_CACHE 1
 #define DAY_LENGTH 600
+
+// control/movement parameters
 #define INVERT_MOUSE 0
 #define MOUSE_SENSITIVITY 0.0025
+#define BASE_SPEED 5.0f
+#define BASE_FLYING_SPEED 20.0f
 
 // rendering options
 #define SHOW_LIGHTS 1

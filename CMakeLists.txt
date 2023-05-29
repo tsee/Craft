@@ -17,7 +17,7 @@ add_library(world SHARED
     src/world.c
     deps/noise/noise.c)
 
-add_definitions(-std=c99 -O3)
+add_definitions(-std=c99 -O3 -Wall)
 
 add_subdirectory(deps/glfw)
 include_directories(deps/glew/include)

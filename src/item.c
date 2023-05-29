@@ -128,7 +128,7 @@ const int blocks[256][6] = {
     {205, 205, 205, 205, 205, 205}, // 61
     {206, 206, 206, 206, 206, 206}, // 62
     {207, 207, 207, 207, 207, 207}, // 63
-    {15, 15, 15, 15, 15, 15}, // 64 -- bright white
+    {0, 0, 0, 0, 0, 0}, // 64 - lantern
 };
 
 const int plants[256] = {
@@ -141,6 +141,12 @@ const int plants[256] = {
     52, // 21 - sun flower
     53, // 22 - white flower
     54, // 23 - blue flower
+    0, 0, 0, 0, 0, 0, 0, 0, // 24-31
+    0, 0, 0, 0, 0, 0, 0, 0, // 32-39
+    0, 0, 0, 0, 0, 0, 0, 0, // 40-47
+    0, 0, 0, 0, 0, 0, 0, 0, // 48-55
+    0, 0, 0, 0, 0, 0, 0, 0, // 56-63
+    160, // lantern
 };
 
 int is_plant(int w) {
@@ -152,6 +158,7 @@ int is_plant(int w) {
         case SUN_FLOWER:
         case WHITE_FLOWER:
         case BLUE_FLOWER:
+        case LANTERN:
             return 1;
         default:
             return 0;

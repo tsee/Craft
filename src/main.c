@@ -2430,23 +2430,25 @@ void handle_movement(double dt) {
     State *s = &g->players->state;
     int sz = 0;
     int sx = 0;
+    int running = 0; // apply running speed modifier?
     if (!g->typing) {
         float m = dt * 1.0;
-        g->ortho = glfwGetKey(g->window, CRAFT_KEY_ORTHO) ? 64 : 0;
-        g->fov = glfwGetKey(g->window, CRAFT_KEY_ZOOM) ? 15 : 65;
-        if (glfwGetKey(g->window, CRAFT_KEY_FORWARD)) sz--;
-        if (glfwGetKey(g->window, CRAFT_KEY_BACKWARD)) sz++;
-        if (glfwGetKey(g->window, CRAFT_KEY_LEFT)) sx--;
-        if (glfwGetKey(g->window, CRAFT_KEY_RIGHT)) sx++;
-        if (glfwGetKey(g->window, GLFW_KEY_LEFT)) s->rx -= m;
-        if (glfwGetKey(g->window, GLFW_KEY_RIGHT)) s->rx += m;
-        if (glfwGetKey(g->window, GLFW_KEY_UP)) s->ry += m;
-        if (glfwGetKey(g->window, GLFW_KEY_DOWN)) s->ry -= m;
+        g->ortho = (glfwGetKey(g->window, CRAFT_KEY_ORTHO) == GLFW_PRESS) ? 64 : 0;
+        g->fov = (glfwGetKey(g->window, CRAFT_KEY_ZOOM) == GLFW_PRESS) ? 15 : 65;
+        running = (glfwGetKey(g->window, CRAFT_KEY_RUN) == GLFW_PRESS) ? 1 : 0;
+        if (glfwGetKey(g->window, CRAFT_KEY_FORWARD) == GLFW_PRESS) sz--;
+        if (glfwGetKey(g->window, CRAFT_KEY_BACKWARD) == GLFW_PRESS) sz++;
+        if (glfwGetKey(g->window, CRAFT_KEY_LEFT) == GLFW_PRESS) sx--;
+        if (glfwGetKey(g->window, CRAFT_KEY_RIGHT) == GLFW_PRESS) sx++;
+        if (glfwGetKey(g->window, GLFW_KEY_LEFT) == GLFW_PRESS) s->rx -= m;
+        if (glfwGetKey(g->window, GLFW_KEY_RIGHT) == GLFW_PRESS) s->rx += m;
+        if (glfwGetKey(g->window, GLFW_KEY_UP) == GLFW_PRESS) s->ry += m;
+        if (glfwGetKey(g->window, GLFW_KEY_DOWN) == GLFW_PRESS) s->ry -= m;
     }
     float vx, vy, vz;
     get_motion_vector(g->flying, sz, sx, s->rx, s->ry, &vx, &vy, &vz);
     if (!g->typing) {
-        if (glfwGetKey(g->window, CRAFT_KEY_JUMP)) {
+        if (glfwGetKey(g->window, CRAFT_KEY_JUMP) == GLFW_PRESS) {
             if (g->flying) {
                 vy = 1;
             }
@@ -2455,7 +2457,11 @@ void handle_movement(double dt) {
             }
         }
     }
-    const float speed = g->flying ? BASE_FLYING_SPEED : BASE_SPEED;
+
+    // use either regular or flying base speed, then potentially speed up
+    // by running modifier
+    const float speed = (g->flying ? BASE_FLYING_SPEED : BASE_SPEED)
+                        * (running ? RUNNING_SPEED_MODIFIER : 1.f);
     const int estimate = roundf(sqrtf(
         powf(vx * speed, 2) +
         powf(vy * speed + ABS(dy) * 2, 2) +

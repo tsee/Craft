@@ -16,8 +16,9 @@
 // control/movement parameters
 #define INVERT_MOUSE 0
 #define MOUSE_SENSITIVITY 0.0025
-#define BASE_SPEED 5.0f
-#define BASE_FLYING_SPEED 20.0f
+#define BASE_SPEED 5.0f // base movement speed
+#define BASE_FLYING_SPEED 20.0f // base movement speed while flying
+#define RUNNING_SPEED_MODIFIER 3.0f // speedup factor hen running enabled
 
 // rendering options
 #define SHOW_LIGHTS 1
@@ -34,6 +35,7 @@
 #define USE_24H_CLOCK 1 // 0 = use 12h (am/pm) clock, 1 = use 24h clock
 
 // key bindings
+//#define CRAFT_KEY_FORWARD 'W'
 #define CRAFT_KEY_FORWARD 'W'
 #define CRAFT_KEY_BACKWARD 'S'
 #define CRAFT_KEY_LEFT 'A'
@@ -45,6 +47,7 @@
 #define CRAFT_KEY_ITEM_NEXT 'E'
 #define CRAFT_KEY_ITEM_PREV 'R'
 #define CRAFT_KEY_ZOOM GLFW_KEY_LEFT_SHIFT
+#define CRAFT_KEY_RUN GLFW_KEY_LEFT_CONTROL
 #define CRAFT_KEY_ORTHO 'F'
 #define CRAFT_KEY_CHAT 't'
 #define CRAFT_KEY_COMMAND '/'

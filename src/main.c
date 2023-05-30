@@ -2434,7 +2434,7 @@ void handle_movement(double dt) {
     if (!g->typing) {
         float m = dt * 1.0;
         g->ortho = (glfwGetKey(g->window, CRAFT_KEY_ORTHO) == GLFW_PRESS) ? 64 : 0;
-        g->fov = (glfwGetKey(g->window, CRAFT_KEY_ZOOM) == GLFW_PRESS) ? 15 : 65;
+        g->fov = (glfwGetKey(g->window, CRAFT_KEY_ZOOM) == GLFW_PRESS) ? FOV_ZOOM : FOV_DEFAULT;
         running = (glfwGetKey(g->window, CRAFT_KEY_RUN) == GLFW_PRESS) ? 1 : 0;
         if (glfwGetKey(g->window, CRAFT_KEY_FORWARD) == GLFW_PRESS) sz--;
         if (glfwGetKey(g->window, CRAFT_KEY_BACKWARD) == GLFW_PRESS) sz++;
@@ -2935,7 +2935,7 @@ int main(int argc, char **argv) {
                 g->width = pw;
                 g->height = ph;
                 g->ortho = 0;
-                g->fov = 65;
+                g->fov = FOV_DEFAULT;
 
                 render_sky(sky_pipeline, sky2_uniform, player, sky_buffer);
                 clear_frame(CLEAR_DEPTH_BIT);

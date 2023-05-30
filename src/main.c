@@ -2839,20 +2839,32 @@ int main(int argc, char **argv) {
             float ts = 12 * g->scale;
             float tx = ts / 2;
             float ty = g->height - ts;
+
             // determine full length
             int length = 0;
             if (SHOW_INFO_TEXT) {
+                // create a day time string in either 12 or 24h format
                 int hour = time_of_day() * 24;
-                char am_pm = hour < 12 ? 'a' : 'p';
-                hour = hour % 12;
-                hour = hour ? hour : 12;
+                char time_str[16];
+                if (USE_24H_CLOCK) {
+                    snprintf(time_str, 15, "%02d:00", hour);
+                }
+                else {
+                    char am_pm = hour < 12 ? 'a' : 'p';
+                    hour = hour % 12;
+                    hour = hour ? hour : 12;
+                    snprintf(time_str, 15, "%2d%cm",hour, am_pm);
+                }
+
+                // generate full info text to display
                 length = snprintf(
                                   info_buffer, MAX_INFO_LENGTH,
-                                  "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %d%cm %dfps",
+                                  "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %s %dfps",
                                   chunked(s->x), chunked(s->z), s->x, s->y, s->z,
                                   g->player_count, g->chunk_count,
-                                  face_count * 2, hour, am_pm, fps.fps);
+                                  face_count * 2, time_str, fps.fps);
             }
+
             if (SHOW_CHAT_TEXT) {
                 for (int i = 0; i < MAX_MESSAGES; i++)
                     length += strlen(g->messages[i]);

@@ -31,6 +31,7 @@
 #define SHOW_CHAT_TEXT 1
 #define SHOW_PLAYER_NAMES 1
 #define PLAYER_NAME_DISTANCE 96 // Maximum distance to display a player's name at
+#define USE_24H_CLOCK 1 // 0 = use 12h (am/pm) clock, 1 = use 24h clock
 
 // key bindings
 #define CRAFT_KEY_FORWARD 'W'

@@ -880,6 +880,7 @@ void occlusion(
             int value = side1 && side2 ? 3 : corner + side1 + side2;
             float shade_sum = 0;
             float light_sum = 0;
+            // 13 is the center point
             int is_light = lights[13] == 15;
             for (int k = 0; k < 4; k++) {
                 shade_sum += shades[lookup4[i][j][k]];
@@ -1049,6 +1050,7 @@ void compute_chunk(WorkerItem *item) {
         if (total == 0) {
             continue;
         }
+        // 27 == 3^3 - stepping from -delta to 0 to +delta for each dimension
         char neighbors[27] = {0};
         char lights[27] = {0};
         float shades[27] = {0};
@@ -1992,13 +1994,13 @@ void tree(Block *block) {
                 int dy = y - (by + 4);
                 int d = (dx * dx) + (dy * dy) + (dz * dz);
                 if (d < 11) {
-                    builder_block(bx + dx, y, bz + dz, 15);
+                    builder_block(bx + dx, y, bz + dz, LEAVES);
                 }
             }
         }
     }
     for (int y = by; y < by + 7; y++) {
-        builder_block(bx, y, bz, 5);
+        builder_block(bx, y, bz, WOOD);
     }
 }
 

@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(craft)
 
-set(VULKANIZE 0)
 set(DEBUG 0)
+# Unfortunately, the Vulkan backend has an crashing bug when you reset (outer
+# main loop). Best guess is that it's missing cleanup or bad initialization.
+# Until such a time, we'll keep on defaulting to GL.
+set(VULKANIZE 0)
 
 FILE(GLOB SOURCE_FILES src/*.c)
 FILE(GLOB VERTEX_SHADERS shaders/*_vertex.glsl)

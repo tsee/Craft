@@ -269,7 +269,7 @@ Buffer gen_crosshair_buffer() {
 // It is represented by 3D lines.
 // Only position coords are included.
 Buffer gen_wireframe_buffer(float n) {
-    float data[72];
+    float data[72]; // 72 = 24*3, with 24 vertexes part of the wireframe
     make_cube_wireframe(data, 0, 0, 0, n);
     return gen_buffer(sizeof(data), data);
 } // gen_wireframe_buffer()
@@ -2728,6 +2728,7 @@ int main(int argc, char **argv) {
         g->scale = get_scale_factor(g->window);
         Buffer sky_buffer = gen_sky_buffer();
         Buffer crosshair_buffer = gen_crosshair_buffer();
+        // 0.5 = 1 cube size (uses side length 2, thus 0.5). 0.53 means "slightly larger"
         Buffer wireframe_buffer = gen_wireframe_buffer(0.53);
         Buffer type_buffer = gen_text_buffer(5, MAX_TEXT_LENGTH);
         Buffer text_buffer = gen_text_buffer(4, MAX_TEXT_LENGTH * (MAX_MESSAGES + 1) + MAX_INFO_LENGTH + 2 * MAX_NAME_LENGTH);

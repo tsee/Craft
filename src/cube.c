@@ -189,21 +189,26 @@ void make_player(
 }
 
 void make_cube_wireframe(float *data, float x, float y, float z, float n) {
+    // relative coordinates of the corner vertexes of a cube of side length 2
+    // centered on the origin
     static const float positions[8][3] = {
-        {-1, -1, -1},
-        {-1, -1, +1},
-        {-1, +1, -1},
-        {-1, +1, +1},
-        {+1, -1, -1},
-        {+1, -1, +1},
-        {+1, +1, -1},
-        {+1, +1, +1}
+        {-1, -1, -1}, // 0
+        {-1, -1, +1}, // 1
+        {-1, +1, -1}, // 2
+        {-1, +1, +1}, // 3
+        {+1, -1, -1}, // 4
+        {+1, -1, +1}, // 5
+        {+1, +1, -1}, // 6
+        {+1, +1, +1}  // 7
     };
+    // indexes into the positions list above,
+    // this represents a continuous path tracing a wire frame cube
     static const int indices[24] = {
         0, 1, 0, 2, 0, 4, 1, 3,
         1, 5, 2, 3, 2, 6, 3, 7,
         4, 5, 4, 6, 5, 7, 6, 7
     };
+    // encode continuous path of wire frame cube into data array
     float *d = data;
     for (int i = 0; i < 24; i++) {
         int j = indices[i];

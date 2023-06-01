@@ -126,6 +126,17 @@ static void maybe_add_tree(int p, int q, world_func func, void *arg,
     }
 }
 
+// generate the cloud layer
+static void add_clouds(world_func func, void *arg, int x, int z, int flag) {
+    if (SHOW_CLOUDS) {
+        for (int y = 64; y < 72; y++) {
+            if (simplex3(x*0.01, y*0.1, z*0.01, 8, 0.5, 2) > 0.75) {
+                func(x, y, z, CLOUD * flag, arg);
+            }
+        }
+    }
+}
+
 // Main terrain generation function
 // Parameters:
 // - p: chunk p location
@@ -159,10 +170,12 @@ void create_world(int p, int q, world_func func, void *arg) {
                 h = t;
                 w = GROUND_MATERIAL;
             }
-            // place mountain and flat ground terrain
+
+            // a column of terrain
             for (int y = 0; y < h; y++) {
                 func(x, y, z, w * flag, arg);
             }
+
             // place plants on grass surfaces
             // as written, this means that if a different material is chosen for mountains/ground,
             // it changes whether or not plants are placed.
@@ -185,16 +198,7 @@ void create_world(int p, int q, world_func func, void *arg) {
 
             } // end if w == GRASS
 
-            // clouds
-            if (SHOW_CLOUDS) {
-                for (int y = 64; y < 72; y++) {
-                    if (simplex3(
-                        x * 0.01, y * 0.1, z * 0.01, 8, 0.5, 2) > 0.75)
-                    {
-                        func(x, y, z, CLOUD * flag, arg);
-                    }
-                }
-            }
+	    add_clouds(func, arg, x, z, flag);
         }
     }
 }

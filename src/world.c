@@ -1,6 +1,20 @@
 #include "config.h"
 #include "noise.h"
 #include "world.h"
+#include "item.h"
+
+#define GROUND_MATERIAL SAND
+#define MOUNTAIN_MATERIAL GRASS
+
+// Offset/factor aren't 100% accurate descriptions since both still get multiplied
+// by one of the two simplex2 outputs. TODO: Need to revisit.
+// shift total height
+#define MOUNTAIN_HEIGHT_OFFSET 16
+// vertical scale factor for simplex generated heights
+#define MOUNTAIN_HEIGHT_FACTOR 32
+
+// base height of ground
+#define GROUND_HEIGHT 12
 
 // Main terrain generation function
 // Parameters:
@@ -14,6 +28,10 @@ void create_world(int p, int q, world_func func, void *arg) {
     // Loop for each (x, z) location in chunk (p, q):
     for (int dx = -pad; dx < CHUNK_SIZE + pad; dx++) {
         for (int dz = -pad; dz < CHUNK_SIZE + pad; dz++) {
+            // TODO don't fully grok the meaning of the negative flag. It gets used to swap
+	    // the w type parameter from positive to negative, but I don't yet understand the
+	    // significance of that. The condition appears to be looking for "are we horizontally
+	    // outside of this chunk".
             int flag = 1;
             if (dx < 0 || dz < 0 || dx >= CHUNK_SIZE || dz >= CHUNK_SIZE) {
                 flag = -1;
@@ -22,21 +40,25 @@ void create_world(int p, int q, world_func func, void *arg) {
             int z = q * CHUNK_SIZE + dz; // convert q (chunk z) and dz to world z
             float f = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2);
             float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
-            int mh = g * 32 + 16;
+            int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;
             int h = f * mh;
             // w = block id
-            int w = 1; // grass
-            int t = 12;
+            int w = MOUNTAIN_MATERIAL;
+            int t = GROUND_HEIGHT;
             if (h <= t) {
                 h = t;
-                w = 2; // sand
+                w = GROUND_MATERIAL;
             }
-            // sand and grass terrain
+            // place mountain and flat ground terrain
             for (int y = 0; y < h; y++) {
                 func(x, y, z, w * flag, arg);
             }
-            // Place plants on grass (block id 1).
-            if (w == 1) {
+            // place plants on grass surfaces
+            // as written, this means that if a different material is chosen for mountains/ground,
+            // it changes whether or not plants are placed.
+            // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
+            // stone/gravel mountains if that's what we're generating.
+            if (w == GRASS) {
                 if (SHOW_PLANTS) {
                     // grass
                     if (simplex2(-x * 0.1, z * 0.1, 4, 0.8, 2) > 0.6) {
@@ -62,23 +84,24 @@ void create_world(int p, int q, world_func func, void *arg) {
                                 int d = (ox * ox) + (oz * oz) +
                                     (y - (h + 4)) * (y - (h + 4));
                                 if (d < 11) {
-                                    func(x + ox, y, z + oz, 15, arg);
+                                    func(x + ox, y, z + oz, LEAVES, arg);
                                 }
                             }
                         }
                     }
                     for (int y = h; y < h + 7; y++) {
-                        func(x, y, z, 5, arg);
+                        func(x, y, z, WOOD, arg);
                     }
                 }
-            }
+            } // end if w == GRASS
+
             // clouds
             if (SHOW_CLOUDS) {
                 for (int y = 64; y < 72; y++) {
                     if (simplex3(
                         x * 0.01, y * 0.1, z * 0.01, 8, 0.5, 2) > 0.75)
                     {
-                        func(x, y, z, 16 * flag, arg); // block id 16 is cloud
+                        func(x, y, z, CLOUD * flag, arg);
                     }
                 }
             }

@@ -16,6 +16,54 @@
 // base height of ground
 #define GROUND_HEIGHT 12
 
+
+// evaluate based on space available and simplex noise whether or not
+// we can place a tree (of some size) here and then potentially do so.
+static void maybe_add_tree(int p, int q, world_func func, void *arg,
+                           int x, int z, int h, int dx, int dz) {
+    int ok = SHOW_TREES;
+
+    if (!ok) return;
+
+    float rnd = simplex2(x*0.5, z*0.5, 2, 0.5, 2);
+    int tree_size;
+    if (rnd > 0.85) {
+        tree_size = 5;
+    } else if (rnd > 0.55) {
+        tree_size = 4;
+    } else {
+        tree_size = 3;
+    }
+    // do we have enough space in this chunk to place a tree?
+    if (dx - tree_size < 0 || dz - tree_size < 0 ||
+        dx + tree_size >= CHUNK_SIZE || dz + tree_size >= CHUNK_SIZE)
+    {
+        ok = 0;
+    }
+    if (!ok) return;
+
+    if (simplex2(x, z, 6, 0.5, 2) > 0.84) {
+        const int half_width = tree_size - 1;
+        // leaves
+        for (int y = h + tree_size-1; y < h + tree_size*2; y++) {
+            for (int ox = -half_width; ox <= half_width; ox++) {
+                for (int oz = -half_width; oz <= half_width; oz++) {
+                    int d = (ox * ox) + (oz * oz) +
+                            (y - (h + tree_size)) * (y - (h + tree_size));
+                    if (d < tree_size * tree_size - 4) {
+                        func(x + ox, y, z + oz, LEAVES, arg);
+                    }
+                }
+            }
+        }
+        // stem
+        for (int y = h; y < h + 2*tree_size - 1; y++) {
+            func(x, y, z, WOOD, arg);
+        }
+    }
+}
+
+
 // Main terrain generation function
 // Parameters:
 // - p: chunk p location
@@ -29,9 +77,9 @@ void create_world(int p, int q, world_func func, void *arg) {
     for (int dx = -pad; dx < CHUNK_SIZE + pad; dx++) {
         for (int dz = -pad; dz < CHUNK_SIZE + pad; dz++) {
             // TODO don't fully grok the meaning of the negative flag. It gets used to swap
-	    // the w type parameter from positive to negative, but I don't yet understand the
-	    // significance of that. The condition appears to be looking for "are we horizontally
-	    // outside of this chunk".
+            // the w type parameter from positive to negative, but I don't yet understand the
+            // significance of that. The condition appears to be looking for "are we horizontally
+            // outside of this chunk".
             int flag = 1;
             if (dx < 0 || dz < 0 || dx >= CHUNK_SIZE || dz >= CHUNK_SIZE) {
                 flag = -1;
@@ -70,29 +118,9 @@ void create_world(int p, int q, world_func func, void *arg) {
                         func(x, h, z, w * flag, arg);
                     }
                 }
-                // trees
-                int ok = SHOW_TREES;
-                if (dx - 4 < 0 || dz - 4 < 0 ||
-                    dx + 4 >= CHUNK_SIZE || dz + 4 >= CHUNK_SIZE)
-                {
-                    ok = 0;
-                }
-                if (ok && simplex2(x, z, 6, 0.5, 2) > 0.84) {
-                    for (int y = h + 3; y < h + 8; y++) {
-                        for (int ox = -3; ox <= 3; ox++) {
-                            for (int oz = -3; oz <= 3; oz++) {
-                                int d = (ox * ox) + (oz * oz) +
-                                    (y - (h + 4)) * (y - (h + 4));
-                                if (d < 11) {
-                                    func(x + ox, y, z + oz, LEAVES, arg);
-                                }
-                            }
-                        }
-                    }
-                    for (int y = h; y < h + 7; y++) {
-                        func(x, y, z, WOOD, arg);
-                    }
-                }
+
+                maybe_add_tree(p, q, func, arg, x, z, h, dx, dz);
+
             } // end if w == GRASS
 
             // clouds
@@ -108,3 +136,4 @@ void create_world(int p, int q, world_func func, void *arg) {
         }
     }
 }
+

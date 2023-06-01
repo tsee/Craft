@@ -16,15 +16,10 @@
 // base height of ground
 #define GROUND_HEIGHT 12
 
+static void maybe_add_deciduous_tree(int p, int q, world_func func, void *arg,
+                                     int x, int z, int h, int dx, int dz) {
 
-// evaluate based on space available and simplex noise whether or not
-// we can place a tree (of some size) here and then potentially do so.
-static void maybe_add_tree(int p, int q, world_func func, void *arg,
-                           int x, int z, int h, int dx, int dz) {
-    int ok = SHOW_TREES;
-
-    if (!ok) return;
-
+    // determine tree size based on some arbitrary distribution
     float rnd = simplex2(x*0.5, z*0.5, 2, 0.5, 2);
     int tree_size;
     if (rnd > 0.85) {
@@ -34,13 +29,13 @@ static void maybe_add_tree(int p, int q, world_func func, void *arg,
     } else {
         tree_size = 3;
     }
+
     // do we have enough space in this chunk to place a tree?
     if (dx - tree_size < 0 || dz - tree_size < 0 ||
         dx + tree_size >= CHUNK_SIZE || dz + tree_size >= CHUNK_SIZE)
     {
-        ok = 0;
+        return;
     }
-    if (!ok) return;
 
     if (simplex2(x, z, 6, 0.5, 2) > 0.84) {
         const int half_width = tree_size - 1;
@@ -56,13 +51,80 @@ static void maybe_add_tree(int p, int q, world_func func, void *arg,
                 }
             }
         }
-        // stem
+        // trunk
         for (int y = h; y < h + 2*tree_size - 1; y++) {
             func(x, y, z, WOOD, arg);
         }
     }
 }
 
+static void maybe_add_coniferous_tree(int p, int q, world_func func, void *arg,
+                                      int x, int z, int h, int dx, int dz) {
+    // determine tree size based on some arbitrary distribution
+    float rnd = simplex2(x*0.5, z*0.5, 2, 0.5, 2);
+    int tree_size;
+    if (rnd > 0.85) {
+        tree_size = 4;
+    } else if (rnd > 0.55) {
+        tree_size = 5;
+    } else if (rnd > 0.45) {
+        tree_size = 6;
+    } else {
+        tree_size = 7;
+    }
+
+    // do we have enough space in this chunk to place a tree?
+    if (dx - tree_size < 0 || dz - tree_size < 0 ||
+        dx + tree_size >= CHUNK_SIZE || dz + tree_size >= CHUNK_SIZE)
+    {
+        return;
+    }
+
+    if (simplex2(x, z, 6, 0.5, 2) > 0.84) {
+        const int half_width = tree_size / 2;
+        const int crown_height = tree_size + 1;
+        const int crown_bottom = h + 2;
+        const int crown_top = crown_bottom + crown_height;
+        const int max_width = 2 * half_width - 2;
+
+        // leaves
+        for (int dy = 0; dy < crown_height; dy++) {
+            const int y = crown_bottom + dy;
+            float radius_sq = max_width * (1.-(float)dy/(float)crown_height);
+            radius_sq = radius_sq * radius_sq + .3;
+
+            for (int ox = -half_width; ox <= half_width; ox++) {
+                for (int oz = -half_width; oz <= half_width; oz++) {
+                    const int d_sq = (ox * ox) + (oz * oz);
+                    if (d_sq <= radius_sq) {
+                        func(x + ox, y, z + oz, LEAVES, arg);
+                    }
+                }
+            }
+        }
+        func(x, crown_top-1, z, LEAVES, arg);
+
+        // trunk
+        for (int y = h; y < crown_top - 2; y++) {
+            func(x, y, z, WOOD, arg);
+        }
+    }
+}
+
+// evaluate based on space available in CHUNK and simplex noise whether
+// or not we can place a tree (of some type and size) here and then
+// potentially do so.
+static void maybe_add_tree(int p, int q, world_func func, void *arg,
+                           int x, int z, int h, int dx, int dz) {
+    if (!SHOW_TREES) return;
+
+    if (simplex2(x*0.5, z*0.5, 2, 0.5, 2) >= 0.6) {
+        maybe_add_deciduous_tree(p, q, func, arg, x, z, h, dx, dz);
+    }
+    else {
+        maybe_add_coniferous_tree(p, q, func, arg, x, z, h, dx, dz);
+    }
+}
 
 // Main terrain generation function
 // Parameters:

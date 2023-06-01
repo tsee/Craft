@@ -150,6 +150,7 @@ const int plants[256] = {
 };
 
 int is_plant(int w) {
+    w = ABS(w);
     switch (w) {
         case TALL_GRASS:
         case YELLOW_FLOWER:
@@ -208,6 +209,7 @@ int is_destructable(int w) {
 }
 
 int is_lantern(int w) {
+    w = ABS(w);
     switch (w) {
         case LANTERN:
             return 10;

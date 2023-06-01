@@ -137,6 +137,21 @@ static void add_clouds(world_func func, void *arg, int x, int z, int flag) {
     }
 }
 
+static void add_plants(world_func func, void *arg, int x, int z, int h, int flag) {
+    if (SHOW_PLANTS) {
+        // grass
+        if (simplex2(-x * 0.1, z * 0.1, 4, 0.8, 2) > 0.6) {
+            func(x, h, z, TALL_GRASS * flag, arg);
+        }
+        // flowers
+        if (simplex2(x * 0.05, -z * 0.05, 4, 0.8, 2) > 0.7) {
+            int w = FLOWERS_BEGIN + simplex2(x * 0.1, z * 0.1, 4, 0.8, 2)
+		    * (FLOWERS_END-FLOWERS_BEGIN+1);
+            func(x, h, z, w * flag, arg);
+        }
+    }
+}
+
 // Main terrain generation function
 // Parameters:
 // - p: chunk p location
@@ -182,18 +197,7 @@ void create_world(int p, int q, world_func func, void *arg) {
             // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
             // stone/gravel mountains if that's what we're generating.
             if (w == GRASS) {
-                if (SHOW_PLANTS) {
-                    // grass
-                    if (simplex2(-x * 0.1, z * 0.1, 4, 0.8, 2) > 0.6) {
-                        func(x, h, z, 17 * flag, arg);
-                    }
-                    // flowers
-                    if (simplex2(x * 0.05, -z * 0.05, 4, 0.8, 2) > 0.7) {
-                        int w = 18 + simplex2(x * 0.1, z * 0.1, 4, 0.8, 2) * 7;
-                        func(x, h, z, w * flag, arg);
-                    }
-                }
-
+                add_plants(func, arg, x, z, h, flag);
                 maybe_add_tree(p, q, func, arg, x, z, h, dx, dz);
 
             } // end if w == GRASS

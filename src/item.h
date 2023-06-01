@@ -1,6 +1,9 @@
 #ifndef _item_h_
 #define _item_h_
 
+#define FLOWERS_BEGIN YELLOW_FLOWER
+#define FLOWERS_END BLUE_FLOWER
+
 #define EMPTY 0
 #define GRASS 1
 #define SAND 2
@@ -19,12 +22,14 @@
 #define LEAVES 15
 #define CLOUD 16
 #define TALL_GRASS 17
+// Flowers begin (see FLOWERS_BEGIN and FLOWERS_END)
 #define YELLOW_FLOWER 18
 #define RED_FLOWER 19
 #define PURPLE_FLOWER 20
 #define SUN_FLOWER 21
 #define WHITE_FLOWER 22
 #define BLUE_FLOWER 23
+// Flowers end
 #define COLOR_00 32
 #define COLOR_01 33
 #define COLOR_02 34

@@ -1,7 +1,7 @@
 #include "item.h"
 #include "util.h"
 
-const int items[] = {
+const blk_type_t items[] = {
     // items the user can build
     GRASS,
     SAND,
@@ -60,9 +60,9 @@ const int items[] = {
     LANTERN,
 };
 
-const int item_count = sizeof(items) / sizeof(int);
+const size_t item_count = sizeof(items) / sizeof(blk_type_t);
 
-const int blocks[256][6] = {
+const int blocks[HARDCODED_ITEM_LIST_SIZE][6] = {
     // w => (left, right, top, bottom, front, back) tiles
     {0, 0, 0, 0, 0, 0}, // 0 - empty
     {16, 16, 32, 0, 16, 16}, // 1 - grass
@@ -131,7 +131,7 @@ const int blocks[256][6] = {
     {0, 0, 0, 0, 0, 0}, // 64 - lantern
 };
 
-const int plants[256] = {
+const int plants[HARDCODED_ITEM_LIST_SIZE] = {
     // w => tile
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0 - 16
     48, // 17 - tall grass
@@ -149,7 +149,7 @@ const int plants[256] = {
     160, // lantern
 };
 
-int is_plant(int w) {
+int is_plant(blk_type_t w) {
     w = ABS(w);
     switch (w) {
         case TALL_GRASS:
@@ -166,7 +166,7 @@ int is_plant(int w) {
     }
 }
 
-int is_obstacle(int w) {
+int is_obstacle(blk_type_t w) {
     w = ABS(w);
     if (is_plant(w)) {
         return 0;
@@ -180,7 +180,7 @@ int is_obstacle(int w) {
     }
 }
 
-int is_transparent(int w) {
+int is_transparent(blk_type_t w) {
     if (w == EMPTY) {
         return 1;
     }
@@ -198,7 +198,7 @@ int is_transparent(int w) {
     }
 }
 
-int is_destructable(int w) {
+int is_destructable(blk_type_t w) {
     switch (w) {
         case EMPTY:
         case CLOUD:
@@ -208,7 +208,7 @@ int is_destructable(int w) {
     }
 }
 
-int is_lantern(int w) {
+int is_lantern(blk_type_t w) {
     w = ABS(w);
     switch (w) {
         case LANTERN:

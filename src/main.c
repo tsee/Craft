@@ -80,7 +80,7 @@ typedef struct {
     int x;
     int y;
     int z;
-    int w;
+    blk_type_t w;
 } Block;
 
 typedef struct {
@@ -293,7 +293,7 @@ Buffer gen_sky_buffer() {
 // 3D position coords, 3D normals, and a 4-component texcoord is included.
 // The first 2 components of the texcoord are standard tex coordinates,
 // The last two are used for ambient occlusion.
-Buffer gen_cube_buffer(float x, float y, float z, float n, int w) {
+Buffer gen_cube_buffer(float x, float y, float z, float n, blk_type_t w) {
     float *data = malloc_faces(10, 6);
     float ao[6][4] = {0};
     float light[6][4] = {
@@ -314,7 +314,7 @@ Buffer gen_cube_buffer(float x, float y, float z, float n, int w) {
 // 3D position coords, 3D normals, and a 4-component texcoord is included.
 // The first 2 components of the texcoord are standard tex coordinates,
 // The last two are theoretically used for ambient occlusion, but not for plants.
-Buffer gen_plant_buffer(float x, float y, float z, float n, int w) {
+Buffer gen_plant_buffer(float x, float y, float z, float n, blk_type_t w) {
     float *data = malloc_faces(10, 4);
     float ao = 0;
     float light = 1;
@@ -606,7 +606,7 @@ int hit_test(
 
 int hit_test_face(Player *player, int *x, int *y, int *z, int *face) {
     State *s = &player->state;
-    const int w = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, x, y, z);
+    const blk_type_t w = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, x, y, z);
     if (is_obstacle(w)) {
         int hx, hy, hz;
         hit_test(1, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
@@ -2742,8 +2742,8 @@ int main(int argc, char **argv) {
         Buffer text_buffer = gen_text_buffer(4, MAX_TEXT_LENGTH * (MAX_MESSAGES + 1) + MAX_INFO_LENGTH + 2 * MAX_NAME_LENGTH);
         Buffer text2_buffer = gen_text_buffer(4, MAX_NAME_LENGTH);
         Buffer *item_buffers = malloc(sizeof(Buffer) * item_count);
-        for(int i = 0; i < item_count; i++) {
-            int w = items[i];
+        for(size_t i = 0; i < item_count; i++) {
+            blk_type_t w = items[i];
             if (is_plant(w))
                 item_buffers[i] = gen_plant_buffer(0, 0, 0, 0.5, w);
             else

@@ -1,6 +1,12 @@
 #ifndef _item_h_
 #define _item_h_
 
+#include <stddef.h>
+#include <stdint.h>
+
+typedef int blk_type_t;
+
+// numeric range of flower type blocks - needs to be contiguous
 #define FLOWERS_BEGIN YELLOW_FLOWER
 #define FLOWERS_END BLUE_FLOWER
 
@@ -64,15 +70,17 @@
 #define COLOR_31 63
 #define LANTERN 64
 
-extern const int items[];
-extern const int item_count;
-extern const int blocks[256][6];
-extern const int plants[256];
+#define HARDCODED_ITEM_LIST_SIZE 256
 
-int is_plant(int w);
-int is_obstacle(int w);
-int is_transparent(int w);
-int is_destructable(int w);
-int is_lantern(int w);
+extern const blk_type_t items[];
+extern const size_t item_count;
+extern const int blocks[HARDCODED_ITEM_LIST_SIZE][6];
+extern const int plants[HARDCODED_ITEM_LIST_SIZE];
+
+int is_plant(blk_type_t w);
+int is_obstacle(blk_type_t w);
+int is_transparent(blk_type_t w);
+int is_destructable(blk_type_t w);
+int is_lantern(blk_type_t w);
 
 #endif

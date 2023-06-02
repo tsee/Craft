@@ -113,7 +113,7 @@ void client_chunk(int p, int q, int key) {
     client_send(buffer);
 }
 
-void client_block(int x, int y, int z, int w) {
+void client_block(int x, int y, int z, blk_type_t w) {
     if (!client_enabled) {
         return;
     }

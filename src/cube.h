@@ -1,6 +1,8 @@
 #ifndef _cube_h_
 #define _cube_h_
 
+#include "item.h"
+
 void make_cube_faces(
     float *data, float ao[6][4], float light[6][4],
     int left, int right, int top, int bottom, int front, int back,
@@ -10,11 +12,11 @@ void make_cube_faces(
 void make_cube(
     float *data, float ao[6][4], float light[6][4],
     int left, int right, int top, int bottom, int front, int back,
-    float x, float y, float z, float n, int w);
+    float x, float y, float z, float n, blk_type_t w);
 
 void make_plant(
     float *data, float ao, float light,
-    float px, float py, float pz, float n, int w, float rotation);
+    float px, float py, float pz, float n, blk_type_t w, float rotation);
 
 void make_player(
     float *data,

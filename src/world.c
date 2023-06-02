@@ -117,10 +117,16 @@ static void maybe_add_tree(world_func func, void *arg,
 }
 
 // generate the cloud layer
+// believe it or not, this appears to be a very large fraction (like 50% at the
+// time of writing) of CPU time, due to the very many simplex3 calls.
+// At that time, the y range used was 64 to 71, and the > threshold was 0.75.
+// Moving that to 69-71 while lowering the threshold to 0.70 (ie. fewer layers
+// to sample, but lower threshold == more clouds in smaller number of layers)
+// cuts the CPU time by over 60%.
 static void add_clouds(world_func func, void *arg, int x, int z, int flag) {
     if (SHOW_CLOUDS) {
-        for (int y = 64; y < 72; y++) {
-            if (simplex3(x*0.01, y*0.1, z*0.01, 8, 0.5, 2) > 0.75) {
+        for (int y = 69; y < 72; y++) {
+            if (simplex3(x*0.01, y*0.1, z*0.01, 8, 0.5, 2) > 0.70) {
                 func(x, y, z, CLOUD * flag, arg);
             }
         }

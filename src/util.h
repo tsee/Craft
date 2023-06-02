@@ -1,7 +1,8 @@
 #ifndef _util_h_
 #define _util_h_
 
-#include "stdint.h"
+#include <stdint.h>
+#include <stddef.h>
 #include "config.h"
 
 #define PI 3.14159265359
@@ -27,7 +28,7 @@ typedef struct {
 int rand_int(int n);
 double rand_double();
 void update_fps(FPS *fps);
-void *load_file(const char *path, int *length);
+void *load_file(const char *path, size_t *length);
 
 unsigned char *load_png_texture(const char *file_name, uint32_t *width, uint32_t *height);
 char *tokenize(char *str, const char *delim, char **key);

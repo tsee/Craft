@@ -161,9 +161,9 @@ static GLuint make_shader(GLenum type, const char *source, int length) {
 // the file occurs, an error message is printed. The contents of the file is used to create
 // a new shader. Returns shader handle regardless of success.
 static GLuint load_shader(GLenum type, const char *path) {
-    int len;
+    size_t len;
     void *data = load_file(path, &len);
-    GLuint result = make_shader(type, data, len);
+    GLuint result = make_shader(type, data, (int)len);
     free(data);
     return result;
 } // load_shader()
@@ -464,6 +464,7 @@ void del_image(Image image) {
 // load program with a thin wrapper while ignoring most of the latter parameters.
 Pipeline gen_pipeline(const char *path1, const char *path2, Uniform uniform,
                       uint32_t attrib_ct, const uint32_t *components, uint32_t feature_bits) {
+    (void) uniform; // unused
     Pipeline ret_pipeline = malloc(sizeof(struct PipelineObj));
     ret_pipeline->program = load_program(path1, path2);
 

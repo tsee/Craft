@@ -2035,7 +2035,7 @@ void parse_command(const char *buffer, int forward) {
         g->mode = MODE_ONLINE;
         strncpy(g->server_addr, server_addr, MAX_ADDR_LENGTH);
         g->server_port = server_port;
-        size_t rv = snprintf(g->db_path, MAX_PATH_LENGTH,
+        int rv = snprintf(g->db_path, MAX_PATH_LENGTH,
                             "cache.%s.%d.db", g->server_addr, g->server_port);
         if (rv < 0 || rv >= MAX_PATH_LENGTH)
             fprintf(stderr, "database name is too long somehow cache.%s.%d.db\n", g->server_addr, g->server_port);
@@ -2166,6 +2166,7 @@ void on_middle_click() {
 }
 
 void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    (void) scancode; // unused
     int control = mods & (GLFW_MOD_CONTROL | GLFW_MOD_SUPER);
     int exclusive =
         glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
@@ -2273,6 +2274,7 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
 }
 
 void on_char(GLFWwindow *window, unsigned int u) {
+    (void) window; // unused
     if (g->suppress_char) {
         g->suppress_char = 0;
         return;
@@ -2306,6 +2308,8 @@ void on_char(GLFWwindow *window, unsigned int u) {
 }
 
 void on_scroll(GLFWwindow *window, double xdelta, double ydelta) {
+    (void) window; // unused
+    (void) xdelta; // unused
     static double ypos = 0;
     ypos += ydelta;
     if (ypos < -SCROLL_THRESHOLD) {
@@ -2678,7 +2682,7 @@ int main(int argc, char **argv) {
         g->mode = MODE_ONLINE;
         strncpy(g->server_addr, argv[1], MAX_ADDR_LENGTH);
         g->server_port = argc == 3 ? atoi(argv[2]) : DEFAULT_PORT;
-        size_t rv = snprintf(g->db_path, MAX_PATH_LENGTH,
+        int rv = snprintf(g->db_path, MAX_PATH_LENGTH,
             "cache.%s.%d.db", g->server_addr, g->server_port);
         if (rv < 0 || rv >= MAX_PATH_LENGTH)
             fprintf(stderr, "database name is too long somehow cache.%s.%d.db\n", g->server_addr, g->server_port);

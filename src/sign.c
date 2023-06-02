@@ -45,7 +45,8 @@ void sign_list_add(
 
 int sign_list_remove(SignList *list, int x, int y, int z, int face) {
     int result = 0;
-    for (int i = 0; i < list->size; i++) {
+    // gnarly int case here because if the i-- repeat-iteration hack below - not pretty
+    for (int i = 0; i < (int)list->size; i++) {
         Sign *e = list->data + i;
         if (e->x == x && e->y == y && e->z == z && e->face == face) {
             Sign *other = list->data + (--list->size);
@@ -59,7 +60,8 @@ int sign_list_remove(SignList *list, int x, int y, int z, int face) {
 
 int sign_list_remove_all(SignList *list, int x, int y, int z) {
     int result = 0;
-    for (int i = 0; i < list->size; i++) {
+    // gnarly int case here because if the i-- repeat-iteration hack below - not pretty
+    for (int i = 0; i < (int)list->size; i++) {
         Sign *e = list->data + i;
         if (e->x == x && e->y == y && e->z == z) {
             Sign *other = list->data + (--list->size);

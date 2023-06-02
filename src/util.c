@@ -28,7 +28,7 @@ void update_fps(FPS *fps) {
     }
 }
 
-void *load_file(const char *path, int *length) {
+void *load_file(const char *path, size_t *length) {
     FILE *file = fopen(path, "rb");
     if (!file) {
         fprintf(stderr, "fopen %s failed: %d %s\n", path, errno, strerror(errno));

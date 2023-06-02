@@ -968,9 +968,9 @@ static VkShaderModule make_shader(uint32_t type, const void *source, int length)
 
 // Read spir-v code from <path> and create shader of <type> and return the vulkan handle
 static VkShaderModule load_shader(uint32_t type, const char *path) {
-    int len;
+    size_t len;
     void *data = load_file(path, &len);
-    VkShaderModule result = make_shader(type, data, len);
+    VkShaderModule result = make_shader(type, data, (int)len);
     free(data);
     return result;
 } // load_shader()

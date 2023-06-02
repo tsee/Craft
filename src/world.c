@@ -156,6 +156,8 @@ static void add_plants(world_func func, void *arg, int x, int z, int h, int flag
 #define MOUNTAIN_HEIGHT_FACTOR 32
 
 void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func func, void *arg) {
+    (void) p; (void) q; // unused
+
     float f = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2);
     float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
     int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;

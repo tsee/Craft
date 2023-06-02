@@ -6,7 +6,7 @@
 // base height of ground
 #define GROUND_HEIGHT 12
 
-static void maybe_add_deciduous_tree(int p, int q, world_func func, void *arg,
+static void maybe_add_deciduous_tree(world_func func, void *arg,
                                      int x, int z, int h, int dx, int dz) {
 
     // determine tree size based on some arbitrary distribution
@@ -48,7 +48,7 @@ static void maybe_add_deciduous_tree(int p, int q, world_func func, void *arg,
     }
 }
 
-static void maybe_add_coniferous_tree(int p, int q, world_func func, void *arg,
+static void maybe_add_coniferous_tree(world_func func, void *arg,
                                       int x, int z, int h, int dx, int dz) {
     // determine tree size based on some arbitrary distribution
     float rnd = simplex2(x*0.5, z*0.5, 2, 0.5, 2);
@@ -104,15 +104,15 @@ static void maybe_add_coniferous_tree(int p, int q, world_func func, void *arg,
 // evaluate based on space available in CHUNK and simplex noise whether
 // or not we can place a tree (of some type and size) here and then
 // potentially do so.
-static void maybe_add_tree(int p, int q, world_func func, void *arg,
+static void maybe_add_tree(world_func func, void *arg,
                            int x, int z, int h, int dx, int dz) {
     if (!SHOW_TREES) return;
 
     if (simplex2(x*0.5, z*0.5, 2, 0.5, 2) >= 0.6) {
-        maybe_add_deciduous_tree(p, q, func, arg, x, z, h, dx, dz);
+        maybe_add_deciduous_tree(func, arg, x, z, h, dx, dz);
     }
     else {
-        maybe_add_coniferous_tree(p, q, func, arg, x, z, h, dx, dz);
+        maybe_add_coniferous_tree(func, arg, x, z, h, dx, dz);
     }
 }
 
@@ -197,7 +197,7 @@ void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func fun
     // stone/gravel mountains if that's what we're generating.
     if (w == GRASS) {
         add_plants(func, arg, x, z, h, flag);
-        maybe_add_tree(p, q, func, arg, x, z, h, dx, dz);
+        maybe_add_tree(func, arg, x, z, h, dx, dz);
     } // end if w == GRASS
 
     add_clouds(func, arg, x, z, flag);

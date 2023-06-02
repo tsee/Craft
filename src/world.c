@@ -143,8 +143,10 @@ static void add_plants(world_func func, void *arg, int x, int z, int h, int flag
 }
 
 
-#define GROUND_MATERIAL SAND
-#define MOUNTAIN_MATERIAL GRASS
+#define SUBTERRANEAN_MATERIAL CEMENT
+#define SURFACE_MATERIAL SAND
+#define MOUNTAIN_SURFACE_MATERIAL GRASS
+#define MOUNTAIN_FILL_MATERIAL DIRT
 
 // Offset/factor aren't 100% accurate descriptions since both still get multiplied
 // by one of the two simplex2 outputs. TODO: Need to revisit.
@@ -158,18 +160,35 @@ void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func fun
     float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
     int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;
     int h = f * mh;
-    // w = block id
-    int w = MOUNTAIN_MATERIAL;
-    int t = GROUND_HEIGHT;
-    if (h <= t) {
-        h = t;
-        w = GROUND_MATERIAL;
+
+    // This biome is comprised of a subterranean material (SUBTERRANEAN_MATERIAL)
+    // up to just below the minimal ground height, then covered with a single layer
+    // of surface material (SURFACE_MATERIAL) OR, based on simplex noise, mountains.
+    // Mountains in this biome are comprised of mountain fill material
+    // (MOUNTAIN_FILL_MATERIAL) up to one layer below their surface, followed by one
+    // later of mountain surface material (MOUNTAIN_SURFACE_MATERIAL). Those would
+    // most obviously be DIRT and GRASS respectively buy can be changed in the above
+    // #defines.
+
+    // set minimal ground height
+    if (h <= GROUND_HEIGHT) {
+        h = GROUND_HEIGHT;
     }
 
     // a column of terrain
-    for (int y = 0; y < h; y++) {
-        func(x, y, z, w * flag, arg);
+    // use subterranean material up to one layer below GROUND_HEIGHT
+    for (int y = 0; y < GROUND_HEIGHT-1; y++) {
+        func(x, y, z, SUBTERRANEAN_MATERIAL * flag, arg);
     }
+
+    // fill mountain with dirt
+    for (int y = GROUND_HEIGHT-1; y < h-1; y++) {
+        func(x, y, z, MOUNTAIN_FILL_MATERIAL * flag, arg);
+    }
+
+    // add final surface layer, either mountain or plain type
+    int w = (h == GROUND_HEIGHT ? SURFACE_MATERIAL : MOUNTAIN_SURFACE_MATERIAL);
+    func(x, h-1, z, w * flag, arg);
 
     // place plants on grass surfaces
     // as written, this means that if a different material is chosen for mountains/ground,
@@ -210,7 +229,7 @@ void biome2(int p, int q, int x, int z, int dx, int dz, int flag, world_func fun
     // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
     // stone/gravel mountains if that's what we're generating.
     if (w == SAND) {
-	// grass only
+        // grass only
         if (simplex2(-x * 0.1, z * 0.1, 4, 0.8, 2) > 0.9) {
             func(x, h, z, TALL_GRASS * flag, arg);
         }

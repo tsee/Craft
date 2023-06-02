@@ -177,6 +177,7 @@ char *client_recv() {
 }
 
 int recv_worker(void *arg) {
+    (void) arg; // unused parameter
     char *data = malloc(sizeof(char) * RECV_SIZE);
     while (1) {
         int length;

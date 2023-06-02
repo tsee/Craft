@@ -2,7 +2,7 @@
 #include <string.h>
 #include "sign.h"
 
-void sign_list_alloc(SignList *list, int capacity) {
+void sign_list_alloc(SignList *list, size_t capacity) {
     list->capacity = capacity;
     list->size = 0;
     list->data = (Sign *)calloc(capacity, sizeof(Sign));

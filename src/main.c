@@ -340,7 +340,7 @@ void update_player_buffer(Buffer buffer, float x, float y, float z, float rx, fl
 // Each character is represented as a textured quad with transparency around the letter.
 // 2D position coords and 2D tex coords are included.
 float *make_text(float *data, float x, float y, float n, char *text) {
-    for (int i = 0; i < strlen(text); i++) {
+    for (size_t i = 0; i < strlen(text); i++) {
         make_character(data, x, y, n / 2, n, text[i]);
         x += n;
         data += 24;
@@ -794,7 +794,7 @@ void gen_sign_buffer(Chunk *chunk) {
 
     // first pass - count characters
     int max_faces = 0;
-    for (int i = 0; i < signs->size; i++) {
+    for (size_t i = 0; i < signs->size; i++) {
         Sign *e = signs->data + i;
         max_faces += strlen(e->text);
     }
@@ -802,7 +802,7 @@ void gen_sign_buffer(Chunk *chunk) {
     // second pass - generate geometry
     float *data = malloc_faces(5, max_faces);
     int faces = 0;
-    for (int i = 0; i < signs->size; i++) {
+    for (size_t i = 0; i < signs->size; i++) {
         Sign *e = signs->data + i;
         faces += _gen_sign_buffer(
             data + faces * 30, e->x, e->y, e->z, e->face, e->text);
@@ -2157,7 +2157,7 @@ void on_middle_click() {
     State *s = &g->players->state;
     int hx, hy, hz;
     int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
-    for (int i = 0; i < item_count; i++) {
+    for (size_t i = 0; i < item_count; i++) {
         if (items[i] == hw) {
             g->item_index = i;
             break;
@@ -2976,7 +2976,7 @@ int main(int argc, char **argv) {
         client_disable();
         shutdown_renderer();
 
-        for(int i = 0; i < item_count; i++)
+        for(size_t i = 0; i < item_count; i++)
             del_buffer(item_buffers[i]);
         free(item_buffers);
         del_buffer(type_buffer);

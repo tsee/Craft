@@ -2063,6 +2063,9 @@ void parse_command(const char *buffer, int forward) {
             add_message("Viewing distance must be between 1 and 24.");
         }
     }
+    else if (strcmp(buffer, "/quit") == 0) {
+        glfwSetWindowShouldClose(g->window, 1);
+    }
     else if (strcmp(buffer, "/copy") == 0) {
         copy();
     }

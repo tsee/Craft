@@ -1,8 +1,6 @@
 #ifndef _map_h_
 #define _map_h_
 
-#include "item.h"
-
 #define EMPTY_ENTRY(entry) ((entry)->value == 0)
 
 #define MAP_FOR_EACH(map, ex, ey, ez, ew) \
@@ -14,7 +12,7 @@
         int ex = entry->e.x + map->dx; \
         int ey = entry->e.y + map->dy; \
         int ez = entry->e.z + map->dz; \
-        blk_type_t ew = entry->e.w;
+        int ew = entry->e.w;
 
 #define END_MAP_FOR_EACH }
 
@@ -24,7 +22,7 @@ typedef union {
         unsigned char x;
         unsigned char y;
         unsigned char z;
-        blk_type_t w;
+        int w;
     } e;
 } MapEntry;
 
@@ -41,7 +39,7 @@ void map_alloc(Map *map, int dx, int dy, int dz, int mask);
 void map_free(Map *map);
 void map_copy(Map *dst, Map *src);
 void map_grow(Map *map);
-int map_set(Map *map, int x, int y, int z, blk_type_t w);
-blk_type_t map_get(Map *map, int x, int y, int z);
+int map_set(Map *map, int x, int y, int z, int w);
+int map_get(Map *map, int x, int y, int z);
 
 #endif

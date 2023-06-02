@@ -964,7 +964,7 @@ void compute_chunk(WorkerItem *item) {
                 int x = ex - ox;
                 int y = ey - oy;
                 int z = ez - oz;
-                int w = ew;
+                blk_type_t w = (blk_type_t)ew;
                 // TODO: this should be unnecessary
                 if (x < 0 || y < 0 || z < 0) {
                     continue;
@@ -1145,9 +1145,9 @@ void gen_chunk_buffer(Chunk *chunk) {
     chunk->dirty = 0;
 }
 
-void map_set_func(int x, int y, int z, int w, void *arg) {
+void map_set_func(int x, int y, int z, blk_type_t w, void *arg) {
     Map *map = (Map *)arg;
-    map_set(map, x, y, z, w);
+    map_set(map, x, y, z, (int)w);
 }
 
 void load_chunk(WorkerItem *item) {
@@ -1511,19 +1511,19 @@ void set_light(int p, int q, int x, int y, int z, int w) {
     }
 }
 
-void _set_block(int p, int q, int x, int y, int z, int w, int dirty) {
+void _set_block(int p, int q, int x, int y, int z, blk_type_t w, int dirty) {
     Chunk *chunk = find_chunk(p, q);
     if (chunk) {
         Map *map = &chunk->map;
-        if (map_set(map, x, y, z, w)) {
+        if (map_set(map, x, y, z, (int)w)) {
             if (dirty) {
                 dirty_chunk(chunk);
             }
-            db_insert_block(p, q, x, y, z, w);
+            db_insert_block(p, q, x, y, z, (int)w);
         }
     }
     else {
-        db_insert_block(p, q, x, y, z, w);
+        db_insert_block(p, q, x, y, z, (int)w);
     }
     if (w == 0 && chunked(x) == p && chunked(z) == q) {
         unset_sign(x, y, z);
@@ -1531,7 +1531,7 @@ void _set_block(int p, int q, int x, int y, int z, int w, int dirty) {
     }
 }
 
-void set_block(int x, int y, int z, int w) {
+void set_block(int x, int y, int z, blk_type_t w) {
     int p = chunked(x);
     int q = chunked(z);
     _set_block(p, q, x, y, z, w, 1);
@@ -1551,11 +1551,11 @@ void set_block(int x, int y, int z, int w) {
     }
     client_block(x, y, z, w);
     if (is_lantern(w)) {
-        set_light(p, q, x, y,z, is_lantern(w));
+        set_light(p, q, x, y, z, is_lantern(w));
     }
 }
 
-void record_block(int x, int y, int z, int w) {
+void record_block(int x, int y, int z, blk_type_t w) {
     memcpy(&g->block1, &g->block0, sizeof(Block));
     g->block0.x = x;
     g->block0.y = y;
@@ -1563,18 +1563,18 @@ void record_block(int x, int y, int z, int w) {
     g->block0.w = w;
 }
 
-int get_block(int x, int y, int z) {
+blk_type_t get_block(int x, int y, int z) {
     int p = chunked(x);
     int q = chunked(z);
     Chunk *chunk = find_chunk(p, q);
     if (chunk) {
         Map *map = &chunk->map;
-        return map_get(map, x, y, z);
+        return (blk_type_t)map_get(map, x, y, z);
     }
     return 0;
 }
 
-void builder_block(int x, int y, int z, int w) {
+void builder_block(int x, int y, int z, blk_type_t w) {
     if (y <= 0 || y >= 256) {
         return;
     }
@@ -1765,7 +1765,7 @@ void render_item(Pipeline pipeline, Uniform uniform, Buffer buffer) {
 
     bind_pipeline(pipeline, uniform, sizeof(ubo_body), &ubo_body);
 
-    int w = items[g->item_index];
+    blk_type_t w = items[g->item_index];
     if (is_plant(w))
         draw_plant(buffer);
     else
@@ -1837,7 +1837,7 @@ void paste() {
     for (int y = 0; y < 256; y++) {
         for (int x = 0; x <= dx; x++) {
             for (int z = 0; z <= dz; z++) {
-                int w = get_block(c1->x + x * scx, y, c1->z + z * scz);
+                blk_type_t w = get_block(c1->x + x * scx, y, c1->z + z * scz);
                 builder_block(p1->x + x * spx, y + oy, p1->z + z * spz, w);
             }
         }
@@ -1848,7 +1848,7 @@ void array(Block *b1, Block *b2, int xc, int yc, int zc) {
     if (b1->w != b2->w) {
         return;
     }
-    int w = b1->w;
+    blk_type_t w = b1->w;
     int dx = b2->x - b1->x;
     int dy = b2->y - b1->y;
     int dz = b2->z - b1->z;
@@ -1871,7 +1871,7 @@ void cube(Block *b1, Block *b2, int fill) {
     if (b1->w != b2->w) {
         return;
     }
-    int w = b1->w;
+    blk_type_t w = b1->w;
     int x1 = MIN(b1->x, b2->x);
     int y1 = MIN(b1->y, b2->y);
     int z1 = MIN(b1->z, b2->z);
@@ -1911,7 +1911,7 @@ void sphere(Block *center, int radius, int fill, int fx, int fy, int fz) {
     int cx = center->x;
     int cy = center->y;
     int cz = center->z;
-    int w = center->w;
+    blk_type_t w = center->w;
     for (int x = cx - radius; x <= cx + radius; x++) {
         if (fx && x != cx) {
             continue;
@@ -1950,7 +1950,7 @@ void cylinder(Block *b1, Block *b2, int radius, int fill) {
     if (b1->w != b2->w) {
         return;
     }
-    int w = b1->w;
+    blk_type_t w = b1->w;
     int x1 = MIN(b1->x, b2->x);
     int y1 = MIN(b1->y, b2->y);
     int z1 = MIN(b1->z, b2->z);

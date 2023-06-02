@@ -3,16 +3,6 @@
 #include "world.h"
 #include "item.h"
 
-#define GROUND_MATERIAL SAND
-#define MOUNTAIN_MATERIAL GRASS
-
-// Offset/factor aren't 100% accurate descriptions since both still get multiplied
-// by one of the two simplex2 outputs. TODO: Need to revisit.
-// shift total height
-#define MOUNTAIN_HEIGHT_OFFSET 16
-// vertical scale factor for simplex generated heights
-#define MOUNTAIN_HEIGHT_FACTOR 32
-
 // base height of ground
 #define GROUND_HEIGHT 12
 
@@ -146,11 +136,112 @@ static void add_plants(world_func func, void *arg, int x, int z, int h, int flag
         // flowers
         if (simplex2(x * 0.05, -z * 0.05, 4, 0.8, 2) > 0.7) {
             int w = FLOWERS_BEGIN + simplex2(x * 0.1, z * 0.1, 4, 0.8, 2)
-		    * (FLOWERS_END-FLOWERS_BEGIN+1);
+                    * (FLOWERS_END-FLOWERS_BEGIN+1);
             func(x, h, z, w * flag, arg);
         }
     }
 }
+
+
+#define GROUND_MATERIAL SAND
+#define MOUNTAIN_MATERIAL GRASS
+
+// Offset/factor aren't 100% accurate descriptions since both still get multiplied
+// by one of the two simplex2 outputs. TODO: Need to revisit.
+// shift total height
+#define MOUNTAIN_HEIGHT_OFFSET 16
+// vertical scale factor for simplex generated heights
+#define MOUNTAIN_HEIGHT_FACTOR 32
+
+void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func func, void *arg) {
+    float f = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2);
+    float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
+    int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;
+    int h = f * mh;
+    // w = block id
+    int w = MOUNTAIN_MATERIAL;
+    int t = GROUND_HEIGHT;
+    if (h <= t) {
+        h = t;
+        w = GROUND_MATERIAL;
+    }
+
+    // a column of terrain
+    for (int y = 0; y < h; y++) {
+        func(x, y, z, w * flag, arg);
+    }
+
+    // place plants on grass surfaces
+    // as written, this means that if a different material is chosen for mountains/ground,
+    // it changes whether or not plants are placed.
+    // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
+    // stone/gravel mountains if that's what we're generating.
+    if (w == GRASS) {
+        add_plants(func, arg, x, z, h, flag);
+        maybe_add_tree(p, q, func, arg, x, z, h, dx, dz);
+    } // end if w == GRASS
+
+    add_clouds(func, arg, x, z, flag);
+}
+
+
+/*
+void biome2(int p, int q, int x, int z, int dx, int dz, int flag, world_func func, void *arg) {
+    float f = simplex2(x * 0.01, z * 0.01, 2, 0.5, 1);
+    float g = simplex2(-x * 0.01, -z * 0.01, 1, 0.9, 1);
+    int mh = g * MOUNTAIN_HEIGHT_FACTOR/4 + MOUNTAIN_HEIGHT_OFFSET;
+    int h = f * mh;
+    // w = block id
+    int w = SAND; // mountains
+    int t = GROUND_HEIGHT;
+    if (h <= t) {
+        h = t;
+        w = SAND; // ground
+    }
+
+    // a column of terrain
+    for (int y = 0; y < h; y++) {
+        func(x, y, z, w * flag, arg);
+    }
+
+    // place plants on grass surfaces
+    // as written, this means that if a different material is chosen for mountains/ground,
+    // it changes whether or not plants are placed.
+    // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
+    // stone/gravel mountains if that's what we're generating.
+    if (w == SAND) {
+	// grass only
+        if (simplex2(-x * 0.1, z * 0.1, 4, 0.8, 2) > 0.9) {
+            func(x, h, z, TALL_GRASS * flag, arg);
+        }
+    }
+
+    //add_clouds(func, arg, x, z, flag);
+}
+*/
+
+/*
+void biome1(int p, int q, int x, int z, int dx, int dz, int flag, world_func func, void *arg) {
+    int lo = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2) * 8 + 8;
+    int hi = simplex2(-x * 0.01, -z * 0.01, 4, 0.5, 2) * 32 + 32;
+    int lookup[] = {3, 6, 11, 12, 13};
+    for (int y = 0; y < lo; y++) {
+        func(x, y, z, 6 * flag, arg);
+    }
+    for (int y = lo; y < hi; y++) {
+        int i = simplex3(-x * 0.01, -y * 0.01, -z * 0.01, 4, 0.5, 2) * 10;
+        int w = lookup[i % 5];
+        if (simplex3(x * 0.01, y * 0.01, z * 0.01, 4, 0.5, 2) > 0.5) {
+            func(x, y, z, w * flag, arg);
+        }
+    }
+    add_clouds(func, arg, x, z, flag);
+}
+*/
+
+
+
+
 
 // Main terrain generation function
 // Parameters:
@@ -174,35 +265,12 @@ void create_world(int p, int q, world_func func, void *arg) {
             }
             int x = p * CHUNK_SIZE + dx; // convert p (chunk x) and dx to world x
             int z = q * CHUNK_SIZE + dz; // convert q (chunk z) and dz to world z
-            float f = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2);
-            float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
-            int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;
-            int h = f * mh;
-            // w = block id
-            int w = MOUNTAIN_MATERIAL;
-            int t = GROUND_HEIGHT;
-            if (h <= t) {
-                h = t;
-                w = GROUND_MATERIAL;
-            }
 
-            // a column of terrain
-            for (int y = 0; y < h; y++) {
-                func(x, y, z, w * flag, arg);
-            }
-
-            // place plants on grass surfaces
-            // as written, this means that if a different material is chosen for mountains/ground,
-            // it changes whether or not plants are placed.
-            // this makes sense because it adds a minor amount of "realism" -- plants wouldn't sit on
-            // stone/gravel mountains if that's what we're generating.
-            if (w == GRASS) {
-                add_plants(func, arg, x, z, h, flag);
-                maybe_add_tree(p, q, func, arg, x, z, h, dx, dz);
-
-            } // end if w == GRASS
-
-	    add_clouds(func, arg, x, z, flag);
+            //int i = simplex2(-x * 0.01, -z * 0.01, 8, 0.5, 2) * 2;
+            //if (i == 0)
+            biome0(p, q, x, z, dz, dz, flag, func, arg);
+            //else biome2(p, q, x, z, dx, dz, flag, func, arg);
+            //else biome1(p, q, x, z, dx, dz, flag, func, arg);
         }
     }
 }

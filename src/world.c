@@ -4,7 +4,7 @@
 #include "item.h"
 
 // base height of ground
-#define GROUND_HEIGHT 12
+#define GROUND_HEIGHT 64
 
 static void maybe_add_deciduous_tree(world_func func, void *arg,
                                      int x, int z, int h, int dx, int dz) {
@@ -117,6 +117,11 @@ static void maybe_add_tree(world_func func, void *arg,
 }
 
 // generate the cloud layer
+#define CLOUD_HEIGHT 120
+#define CLOUD_THICKNESS 3
+// Larger number == fewer clouds
+#define CLOUD_DENSITY_SCALE 0.70
+
 // believe it or not, this appears to be a very large fraction (like 50% at the
 // time of writing) of CPU time, due to the very many simplex3 calls.
 // At that time, the y range used was 64 to 71, and the > threshold was 0.75.
@@ -125,8 +130,8 @@ static void maybe_add_tree(world_func func, void *arg,
 // cuts the CPU time by over 60%.
 static void add_clouds(world_func func, void *arg, int x, int z, int flag) {
     if (SHOW_CLOUDS) {
-        for (int y = 69; y < 72; y++) {
-            if (simplex3(x*0.01, y*0.1, z*0.01, 8, 0.5, 2) > 0.70) {
+        for (int y = CLOUD_HEIGHT; y < CLOUD_HEIGHT+CLOUD_THICKNESS; y++) {
+            if (simplex3(x*0.01, y*0.1, z*0.01, 8, 0.5, 2) > CLOUD_DENSITY_SCALE) {
                 func(x, y, z, CLOUD * flag, arg);
             }
         }
@@ -157,17 +162,18 @@ static void add_plants(world_func func, void *arg, int x, int z, int h, int flag
 // Offset/factor aren't 100% accurate descriptions since both still get multiplied
 // by one of the two simplex2 outputs. TODO: Need to revisit.
 // shift total height
-#define MOUNTAIN_HEIGHT_OFFSET 16
+#define MOUNTAIN_HEIGHT_OFFSET GROUND_HEIGHT-16
 // vertical scale factor for simplex generated heights
-#define MOUNTAIN_HEIGHT_FACTOR 32
+#define MOUNTAIN_HEIGHT_FACTOR 16
+#define MOUNTAIN_HEIGHT_FACTOR2 32
 
 void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func func, void *arg) {
     (void) p; (void) q; // unused
 
     float f = simplex2(x * 0.01, z * 0.01, 4, 0.5, 2);
     float g = simplex2(-x * 0.01, -z * 0.01, 2, 0.9, 2);
-    int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_OFFSET;
-    int h = f * mh;
+    int mh = g * MOUNTAIN_HEIGHT_FACTOR + MOUNTAIN_HEIGHT_FACTOR2;
+    int h = f * mh + MOUNTAIN_HEIGHT_OFFSET;
 
     // This biome is comprised of a subterranean material (SUBTERRANEAN_MATERIAL)
     // up to just below the minimal ground height, then covered with a single layer

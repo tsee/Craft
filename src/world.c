@@ -138,6 +138,17 @@ static void add_clouds(world_func func, void *arg, int x, int z, int flag) {
     }
 }
 
+// uses 3d simplex noise to add pockets of "minerals" to the ground (not to
+// mountains). As implemented, this is very computationally expensive due to
+// the simplex3 evaluations.
+static void add_minerals(world_func func, void *arg, int x, int z, int flag) {
+    for (int y = 1; y < GROUND_HEIGHT-1; y++) {
+        if (simplex3(x*0.015, y*0.15, z*0.015, 8, 0.5, 5) > 0.80) {
+            func(x, y, z, COLOR_27 * flag, arg);
+        }
+    }
+}
+
 static void add_plants(world_func func, void *arg, int x, int z, int h, int flag) {
     if (SHOW_PLANTS) {
         // grass
@@ -214,6 +225,7 @@ void biome0(int p, int q, int x, int z, int dx, int dz, int flag, world_func fun
         maybe_add_tree(func, arg, x, z, h, dx, dz);
     } // end if w == GRASS
 
+    //add_minerals(func, arg, x, z, flag);
     add_clouds(func, arg, x, z, flag);
 }
 

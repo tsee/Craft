@@ -140,6 +140,8 @@ typedef struct {
     int window_height;
     int window_xpos;
     int window_ypos;
+    int window_width_crosshair; // width used for most recent crosshair reset
+    int window_height_crosshair; // height used for most recent crosshair reset
     GLFWmonitor *fullscreen_monitor;
     int fullscreen_width;
     int fullscreen_height;
@@ -2382,12 +2384,16 @@ void get_fullscreen_monitor_dimensions() {
 
 void fullscreen_exit() {
     glfwSetWindowMonitor(g->window, NULL, g->window_xpos, g->window_ypos, g->window_width, g->window_height, GLFW_DONT_CARE);
+    g->width = g->window_width;
+    g->height = g->window_height;
 }
 
 void fullscreen_enter() {
     glfwGetWindowPos(g->window, &g->window_xpos, &g->window_ypos);
     glfwGetWindowSize(g->window, &g->window_width, &g->window_height);
     glfwSetWindowMonitor(g->window, g->fullscreen_monitor, 0, 0, g->fullscreen_width, g->fullscreen_height, GLFW_DONT_CARE);
+    g->width = g->fullscreen_width;
+    g->height = g->fullscreen_height;
 }
 
 void create_window() {
@@ -2960,6 +2966,16 @@ int main(int argc, char **argv) {
                     update_faces(text2_buffer, 4, length, data);
                     render_text(text_pipeline, text2_uniform, length, text2_buffer);
                 }
+            }
+
+            // refresh crosshair if window size changed
+            if (g->width != g->window_width_crosshair
+                || g->height != g->window_height_crosshair)
+            {
+                del_buffer(crosshair_buffer);
+                crosshair_buffer = gen_crosshair_buffer();
+                g->window_width_crosshair = g->width;
+                g->window_height_crosshair = g->height;
             }
 
             // SWAP AND POLL //

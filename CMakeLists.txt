@@ -6,7 +6,6 @@ set(DEBUG 0)
 # Unfortunately, the Vulkan backend has an crashing bug when you reset (outer
 # main loop). Best guess is that it's missing cleanup or bad initialization.
 # Until such a time, we'll keep on defaulting to GL.
-# Do not enable VULKANIZE on APPLE due to crappy logic with GRAPHICS_LIB below.
 set(VULKANIZE 0)
 
 FILE(GLOB SOURCE_FILES src/*.c)
@@ -92,7 +91,11 @@ include_directories(${CURL_INCLUDE_DIR})
 if(VULKANIZE)
     set(GRAPHICS_LIB vulkan)
 else(VULKANIZE)
-    set(GRAPHICS_LIB GLEW)
+    if(APPLE)
+        set(GRAPHICS_LIB GLEW::GLEW)
+    else(APPLE)
+        set(GRAPHICS_LIB GLEW)
+    endif(APPLE)
 endif(VULKANIZE)
 
 if(APPLE)
@@ -103,9 +106,9 @@ if(APPLE)
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
 
-    target_link_libraries(craft glfw GLEW::GLEW m OpenGL::GL
+    target_link_libraries(craft glfw m OpenGL::GL ${GRAPHICS_LIB}
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
-endif()
+endif(APPLE)
 
 if(UNIX)
     target_link_libraries(craft dl glfw m GL ${GRAPHICS_LIB}

@@ -6,7 +6,7 @@ from ctypes import CDLL, CFUNCTYPE, c_float, c_int, c_void_p
 from collections import OrderedDict
 
 # get the right filename - probably not the most portable in the world
-dllname = "./world.dylib" # osx by default
+dllname = "./libworld.dylib" # osx by default
 if platform.uname()[0] == "Windows":
     dllname = "world.dll"
 elif platform.uname()[0] == "Linux":

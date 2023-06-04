@@ -34,7 +34,7 @@ Download and install [CMake](http://www.cmake.org/cmake/resources/software.html)
 if you don't already have it. You may use [Homebrew](http://brew.sh) to simplify
 the installation:
 
-    brew install cmake
+    brew install cmake glfw glew curl glslang
 
 #### Linux (Ubuntu)
 

@@ -18,6 +18,7 @@ log.txt
 .*.swp
 .*.swo
 libworld.so
+libworld.dylib
 *.spv
 *~
 callgrind.out*

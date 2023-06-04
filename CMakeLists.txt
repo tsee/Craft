@@ -98,24 +98,22 @@ else(VULKANIZE)
     endif(APPLE)
 endif(VULKANIZE)
 
-if(UNIX)
-    target_link_libraries(craft dl glfw m GL ${GRAPHICS_LIB}
-        ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
-endif()
 
 if(APPLE)
     find_package(OpenGL REQUIRED)
     find_package(GLEW REQUIRED)
     find_package(glfw3 REQUIRED)
 
+    include_directories(${OPENGL_INCLUDE_DIRS})
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
 
     target_link_libraries(craft glfw ${GRAPHICS_LIB} m OpenGL::GL
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
-endif(APPLE)
-
-if(MINGW)
+elseif(UNIX)
+    target_link_libraries(craft dl glfw m GL ${GRAPHICS_LIB}
+        ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
+elseif(MINGW)
     target_link_libraries(craft ws2_32.lib glfw m GL ${GRAPHICS_LIB}
         ${GLFW_LIBRARIES} ${CURL_LIBRARIES})
 endif()

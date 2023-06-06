@@ -2621,6 +2621,99 @@ void reset_model() {
     g->time_changed = 1;
 }
 
+// render debug and general info text that will be shown at the top of the screen
+// this just generates the characters in a char buffer
+size_t assemble_info_text(State *s, FPS *fps, int face_count,
+                          char *output_buffer, size_t max_length)
+{
+    if (SHOW_INFO_TEXT) {
+        // create a day time string in either 12 or 24h format
+        int hour = time_of_day() * 24;
+        char time_str[16];
+        if (USE_24H_CLOCK) {
+            snprintf(time_str, 15, "%02d:00", hour);
+        }
+        else {
+            char am_pm = hour < 12 ? 'a' : 'p';
+            hour = hour % 12;
+            hour = hour ? hour : 12;
+            snprintf(time_str, 15, "%2d%cm",hour, am_pm);
+        }
+
+        // generate full info text to display
+        int length = snprintf(
+            output_buffer, max_length,
+            "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %s %dfps",
+            chunked(s->x), chunked(s->z), s->x, s->y, s->z,
+            g->player_count, g->chunk_count,
+            face_count * 2, time_str, fps->fps);
+        return length;
+    }
+    else {
+        return 0;
+    }
+}
+
+// render the info text, chat messages, command entry at the top of the screen
+void render_top_of_screen_text(State *s, FPS *fps, int face_count, Player *me, Player *player,
+                               Buffer text_buffer, Pipeline text_pipeline, Uniform text_uniform)
+{
+    char info_buffer[MAX_INFO_LENGTH];
+    const float ts = 12 * g->scale;
+    float tx = ts / 2;
+    float ty = g->height - ts;
+
+    // determine full length
+    int length = 0;
+
+    length += assemble_info_text(s, fps, face_count, info_buffer, MAX_INFO_LENGTH);
+
+    if (SHOW_CHAT_TEXT) {
+        for (int i = 0; i < MAX_MESSAGES; i++)
+            length += strlen(g->messages[i]);
+    }
+    if (g->typing)
+        length += strlen(g->typing_buffer) + 2;
+    if (player != me)
+        length += strlen(player->name);
+    Player *other = player_crosshair(player);
+    if (other)
+        length += strlen(other->name);
+    float *data = malloc_faces(4, length);
+    float *data_ptr = data;
+    if (SHOW_INFO_TEXT) {
+        data_ptr = make_text(data_ptr, tx, ty, ts, info_buffer);
+        ty -= ts * 2;
+    }
+    if (SHOW_CHAT_TEXT) {
+        for (int i = 0; i < MAX_MESSAGES; i++) {
+            int index = (g->message_index + i) % MAX_MESSAGES;
+            char *text = g->messages[index];
+            if (text[0]) {
+                data_ptr = make_text(data_ptr, tx, ty, ts, text);
+                ty -= ts * 2;
+            }
+        }
+    }
+    if (g->typing) {
+        make_character(data_ptr, tx, ty, ts / 2, ts, '>');
+        data_ptr += 24;
+        make_character(data_ptr, tx + ts, ty, ts / 2, ts, ' ');
+        data_ptr += 24;
+        data_ptr = make_text(data_ptr, tx + 2*ts, ty, ts, g->typing_buffer);
+    }
+    if (SHOW_PLAYER_NAMES) {
+        if (player != me)
+            data_ptr = make_text(data_ptr, g->width/2, ts, ts, player->name);
+        if (other)
+            make_text(data_ptr, g->width/2, g->height / 2 - ts - 24, ts, other->name);
+    }
+    if (length) {
+        update_faces(text_buffer, 4, length, data);
+        render_text(text_pipeline, text_uniform, length, text_buffer);
+    }
+} // end render_top_of_screen_text
+
 // Read in configuration information from database and args
 // perform inner loop processing user input and rendering the current scene.
 int main(int argc, char **argv) {
@@ -2857,80 +2950,7 @@ int main(int argc, char **argv) {
             }
 
             // RENDER TEXT //
-            char info_buffer[MAX_INFO_LENGTH];
-            float ts = 12 * g->scale;
-            float tx = ts / 2;
-            float ty = g->height - ts;
-
-            // determine full length
-            int length = 0;
-            if (SHOW_INFO_TEXT) {
-                // create a day time string in either 12 or 24h format
-                int hour = time_of_day() * 24;
-                char time_str[16];
-                if (USE_24H_CLOCK) {
-                    snprintf(time_str, 15, "%02d:00", hour);
-                }
-                else {
-                    char am_pm = hour < 12 ? 'a' : 'p';
-                    hour = hour % 12;
-                    hour = hour ? hour : 12;
-                    snprintf(time_str, 15, "%2d%cm",hour, am_pm);
-                }
-
-                // generate full info text to display
-                length = snprintf(
-                                  info_buffer, MAX_INFO_LENGTH,
-                                  "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %s %dfps",
-                                  chunked(s->x), chunked(s->z), s->x, s->y, s->z,
-                                  g->player_count, g->chunk_count,
-                                  face_count * 2, time_str, fps.fps);
-            }
-
-            if (SHOW_CHAT_TEXT) {
-                for (int i = 0; i < MAX_MESSAGES; i++)
-                    length += strlen(g->messages[i]);
-            }
-            if (g->typing)
-                length += strlen(g->typing_buffer) + 2;
-            if (player != me)
-                length += strlen(player->name);
-            Player *other = player_crosshair(player);
-            if (other)
-                length += strlen(other->name);
-            float *data = malloc_faces(4, length);
-            float *data_ptr = data;
-            if (SHOW_INFO_TEXT) {
-                data_ptr = make_text(data_ptr, tx, ty, ts, info_buffer);
-                ty -= ts * 2;
-            }
-            if (SHOW_CHAT_TEXT) {
-                for (int i = 0; i < MAX_MESSAGES; i++) {
-                    int index = (g->message_index + i) % MAX_MESSAGES;
-                    char *text = g->messages[index];
-                    if (text[0]) {
-                        data_ptr = make_text(data_ptr, tx, ty, ts, text);
-                        ty -= ts * 2;
-                    }
-                }
-            }
-            if (g->typing) {
-                make_character(data_ptr, tx, ty, ts / 2, ts, '>');
-                data_ptr += 24;
-                make_character(data_ptr, tx + ts, ty, ts / 2, ts, ' ');
-                data_ptr += 24;
-                data_ptr = make_text(data_ptr, tx + 2*ts, ty, ts, g->typing_buffer);
-            }
-            if (SHOW_PLAYER_NAMES) {
-                if (player != me)
-                    data_ptr = make_text(data_ptr, g->width/2, ts, ts, player->name);
-                if (other)
-                    make_text(data_ptr, g->width/2, g->height / 2 - ts - 24, ts, other->name);
-            }
-            if (length) {
-                update_faces(text_buffer, 4, length, data);
-                render_text(text_pipeline, text_uniform, length, text_buffer);
-            }
+            render_top_of_screen_text(s, &fps, face_count, me, player, text_buffer, text_pipeline, text_uniform);
 
             // RENDER PICTURE IN PICTURE //
             if (g->observe2) {
@@ -2960,6 +2980,7 @@ int main(int argc, char **argv) {
                 clear_frame(CLEAR_DEPTH_BIT);
                 if (SHOW_PLAYER_NAMES) {
                     int length = strlen(player->name);
+                    const float ts = 12 * g->scale;
                     float x = pw / 2 - ts * ALIGN_CENTER * (length - 1)/2;
                     float *data = malloc_faces(4, length);
                     make_text(data, x, ts, ts, player->name);

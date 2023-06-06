@@ -4,8 +4,10 @@
 // app parameters
 #define DEBUG 0
 #define FULLSCREEN 0
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
+#define WINDOW_WIDTH 1920 // resolution to use for windowed mode
+#define WINDOW_HEIGHT 1080
+#define FULLSCREEN_WIDTH 1920 // resolution for fullscreen. Set to 0 for auto detect.
+#define FULLSCREEN_HEIGHT 1080
 #define VSYNC 1
 #define SCROLL_THRESHOLD 0.1
 #define MAX_MESSAGES 4

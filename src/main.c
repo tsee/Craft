@@ -134,8 +134,10 @@ typedef struct {
     char typing_buffer[MAX_TEXT_LENGTH];
     int message_index;
     char messages[MAX_MESSAGES][MAX_TEXT_LENGTH];
+    // current window width/height in pixels regardless of window vs. fullscreen mode
     int width;
     int height;
+    // non-fullscreen window width/height/position information for saving while in fullscreen mode
     int window_width;
     int window_height;
     int window_xpos;
@@ -2364,18 +2366,24 @@ void on_mouse_button(GLFWwindow *window, int button, int action, int mods) {
 }
 
 void get_fullscreen_monitor_dimensions() {
-    int mode_count;
     g->fullscreen_monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode *modes = glfwGetVideoModes(g->fullscreen_monitor, &mode_count);
-    g->fullscreen_width = modes[mode_count - 1].width;
-    g->fullscreen_height= modes[mode_count - 1].height;
+    if (FULLSCREEN_HEIGHT == 0 || FULLSCREEN_WIDTH == 0) {
+        int mode_count;
+        const GLFWvidmode *modes = glfwGetVideoModes(g->fullscreen_monitor, &mode_count);
+        g->fullscreen_width = modes[mode_count - 1].width;
+        g->fullscreen_height= modes[mode_count - 1].height;
 
-    GLFWwindow *test_window = glfwCreateWindow(
-        g->fullscreen_width, g->fullscreen_height, "Craft", NULL, NULL);
-    int scale = get_scale_factor(test_window);
-    glfwDestroyWindow(test_window);
-    g->fullscreen_width /= scale;
-    g->fullscreen_height /= scale;
+        GLFWwindow *test_window = glfwCreateWindow(
+                g->fullscreen_width, g->fullscreen_height, "Craft", NULL, NULL);
+        int scale = get_scale_factor(test_window);
+        glfwDestroyWindow(test_window);
+        g->fullscreen_width /= scale;
+        g->fullscreen_height /= scale;
+    }
+    else {
+        g->fullscreen_width = FULLSCREEN_WIDTH;
+        g->fullscreen_height = FULLSCREEN_HEIGHT;
+    }
 }
 
 void fullscreen_exit() {

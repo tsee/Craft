@@ -28,6 +28,10 @@ typedef struct {
 int rand_int(int n);
 double rand_double();
 void update_fps(FPS *fps);
+
+// convert absolute world coordinate into chunk # in the same direction (dimension)
+int chunked(float x);
+
 void *load_file(const char *path, size_t *length);
 
 unsigned char *load_png_texture(const char *file_name, uint32_t *width, uint32_t *height);

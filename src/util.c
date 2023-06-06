@@ -17,6 +17,10 @@ double rand_double() {
     return (double)rand() / (double)RAND_MAX;
 }
 
+int chunked(float x) {
+    return floorf(roundf(x) / CHUNK_SIZE);
+}
+
 void update_fps(FPS *fps) {
     fps->frames++;
     double now = glfwGetTime();

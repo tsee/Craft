@@ -172,10 +172,6 @@ static Model *g = &model;
 void fullscreen_exit();
 void fullscreen_enter();
 
-int chunked(float x) {
-    return floorf(roundf(x) / CHUNK_SIZE);
-}
-
 float time_of_day() {
     if (g->day_length <= 0) {
         return 0.5;

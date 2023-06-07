@@ -541,7 +541,7 @@ int highest_block(const float x, const float z) {
     return result;
 }
 
-int _hit_test(
+blk_type_t _hit_test(
     Map *map, float max_distance, int previous,
     float x, float y, float z,
     float vx, float vy, float vz,
@@ -556,7 +556,7 @@ int _hit_test(
         const int ny = roundf(y);
         const int nz = roundf(z);
         if (nx != px || ny != py || nz != pz) {
-            int hw = map_get(map, nx, ny, nz);
+            blk_type_t hw = (blk_type_t)map_get(map, nx, ny, nz);
             if (hw > 0) {
                 if (previous) {
                     *hx = px; *hy = py; *hz = pz;
@@ -573,11 +573,11 @@ int _hit_test(
     return 0;
 }
 
-int hit_test(
+blk_type_t hit_test(
     int previous, float x, float y, float z, float rx, float ry,
     int *bx, int *by, int *bz)
 {
-    int result = 0;
+    blk_type_t result = 0;
     float best = 0;
     const int p = chunked(x);
     const int q = chunked(z);
@@ -589,7 +589,7 @@ int hit_test(
             continue;
         }
         int hx, hy, hz;
-        int hw = _hit_test(&chunk->map, 8, previous,
+        blk_type_t hw = _hit_test(&chunk->map, 8, previous,
             x, y, z, vx, vy, vz, &hx, &hy, &hz);
         if (hw > 0) {
             const float d = sqrtf(
@@ -1730,7 +1730,7 @@ void render_sky(Pipeline pipeline, Uniform uniform, Player *player, Buffer buffe
 void render_wireframe(Pipeline pipeline, Uniform uniform, Player *player, Buffer buffer) {
     State *s = &player->state;
     int hx, hy, hz;
-    int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
+    blk_type_t hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
     if (is_obstacle(hw)) {
         MatUbo ubo_body;
         set_matrix_3d(
@@ -2125,7 +2125,7 @@ void parse_command(const char *buffer, int forward) {
 void on_light() {
     State *s = &g->players->state;
     int hx, hy, hz;
-    int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
+    const blk_type_t hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
     if (hy > 0 && hy < 256 && is_destructable(hw)) {
         toggle_light(hx, hy, hz);
     }
@@ -2134,7 +2134,7 @@ void on_light() {
 void on_left_click() {
     State *s = &g->players->state;
     int hx, hy, hz;
-    int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
+    const blk_type_t hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
     if (hy > 0 && hy < 256 && is_destructable(hw)) {
         set_block(hx, hy, hz, 0);
         record_block(hx, hy, hz, 0);
